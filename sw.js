@@ -1,7 +1,11 @@
-const CACHE_NAME = 'origami-v2';
+const CACHE_NAME = 'origami-v4';
 const ASSETS = [
   './',
   './index.html',
+  './css/style.css',
+  './js/data.js',
+  './js/supabase.js',
+  './js/app.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'
 ];
 
