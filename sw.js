@@ -1,4 +1,4 @@
-const CACHE_NAME = 'origami-v1';
+const CACHE_NAME = 'origami-v2';
 const ASSETS = [
   './',
   './index.html',
