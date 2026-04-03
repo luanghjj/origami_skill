@@ -30,14 +30,14 @@ function renderCardHTML(d, scores, customNames) {
         ${scoreBadge}
       </div>
       <h3 style="margin-bottom:4px;">${d.name}${isCustom ? ` <span style="font-size:0.65rem;background:var(--ac-light);color:var(--ac);padding:2px 7px;border-radius:8px;vertical-align:middle;">${t('badge_custom')}</span>` : ''}</h3>
-      <p class="desc">${d.desc}</p>
+      <p class="desc">${tDesc(d.desc)}</p>
       <ul class="ingredients-list">
         ${d.ingredients.map(ing => `<li>${ing}</li>`).join('')}
       </ul>
       ${d.glass ? `<div class="glass-note">
-        <span>${cardType === 'food' ? '🍽️' : '🥃'} ${d.glass}</span>
+        <span>${cardType === 'food' ? '🍽️' : '🥃'} ${tGlass(d.glass)}</span>
       </div>` : ''}
-      ${d.note ? `<div class="note-text">💡 ${d.note}</div>` : ''}
+      ${d.note ? `<div class="note-text">💡 ${tNote(d.note)}</div>` : ''}
       ${isCustom ? `<div class="card-actions">
         <button class="ca-btn edit" onclick="event.stopPropagation();openEditDrink(${JSON.stringify(d.name).replace(/"/g,'&quot;')})">${t('btn_edit')}</button>
         <button class="ca-btn del"  onclick="event.stopPropagation();deleteCardDrink(${JSON.stringify(d.name).replace(/"/g,'&quot;')})">${t('btn_del')}</button>
@@ -679,7 +679,7 @@ function loadCard() {
   document.getElementById('fc-number').textContent = `${trainIndex + 1} / ${trainQueue.length}`;
   document.getElementById('fc-category').textContent = tCat(drink.cat);
   document.getElementById('fc-name').textContent = drink.name;
-  document.getElementById('fc-desc').textContent = drink.desc;
+  document.getElementById('fc-desc').textContent = tDesc(drink.desc);
 
   // Build chip pool
   buildChipPool(drink);
