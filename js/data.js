@@ -600,6 +600,62 @@ const DESC_DE = {
   'Kem xoài': 'Mango-Eis',
   'Bánh Mochi kem': 'Mochi-Eiscreme',
   'Chè đậu đỏ': 'Rote-Bohnen-Dessert',
+  // Crunchy Roll
+  'Tôm chiên giòn': 'Knusprige Garnelen',
+  'Măng tây chiên giòn': 'Knuspriger Spargel',
+  'Bơ chiên giòn': 'Knusprige Avocado',
+  'Gà Yakitori chiên giòn': 'Knuspriges Yakitori-Hähnchen',
+  'Cá cam chiên giòn': 'Knuspriger Hamachi',
+  'Cá hồi chiên giòn': 'Knuspriger Lachs',
+  'Cá ngừ chiên giòn': 'Knuspriger Thunfisch',
+  // Maki Light
+  'Maki cá hồi thanh đạm': 'Lachs Maki Light',
+  'Maki cá ngừ thanh đạm': 'Thunfisch Maki Light',
+  'Maki tôm Tempura thanh đạm': 'Garnelen-Tempura Maki Light',
+  'Maki chay thanh đạm': 'Vegetarisches Maki Light',
+  'Maki gà Yakitori thanh đạm': 'Yakitori Maki Light',
+  'Maki tôm thanh đạm': 'Garnelen Maki Light',
+  'Maki lươn thanh đạm': 'Unagi Maki Light',
+  'Maki sò điệp thanh đạm': 'Jakobsmuschel Maki Light',
+  // Inside-Out
+  'InsideOut cá hồi Alaska': 'Lachs Alaska Inside-Out',
+  'InsideOut cá ngừ Alaska': 'Thunfisch Alaska Inside-Out',
+  'InsideOut gà Teriyaki': 'Teriyaki-Hähnchen Inside-Out',
+  'InsideOut rau củ Địa Trung Hải': 'Mediterranes Gemüse Inside-Out',
+  // Spinach Wrap
+  'Cuộn rau bina cá hồi cay': 'Scharfer Lachs Spinat-Wrap',
+  'Cuộn rau bina tôm Tempura': 'Garnelen-Tempura Spinat-Wrap',
+  'Cuộn rau bina cá ngừ cay': 'Scharfer Thunfisch Spinat-Wrap',
+  // Tatar Roll
+  'Cuộn tatar cá ngừ Địa Trung Hải': 'Mediterrane Thunfisch-Tatar-Rolle',
+  // Set Sushi – Lunch
+  '6 Bơ giòn · 2 Sake Nigiri nướng sơ · 6 Tatar Salmon Mediterran': '6 Crunchy Avocado · 2 Flamed Sake Nigiri · 6 Tatar Salmon Mediterran',
+  '6 Alaska I/O · 6 Avocado Cheese · 6 Sake Maki': '6 Alaska I/O · 6 Avocado Cheese · 6 Sake Maki',
+  '6 Spicy Tuna Roll · 2 Flamed Tuna Nigiri · 3 Crunchy Tuna': '6 Spicy Tuna Roll · 2 Flamed Tuna Nigiri · 3 Crunchy Tuna',
+  '6 Avocado Asupara · 6 Cucumber Maki · 6 Green Veggie': '6 Avocado Asupara · 6 Cucumber Maki · 6 Green Veggie',
+  // Set Sushi – Dinner
+  '6 Tuna I/O · 6 Avocado Cheese · 2 Sake Nigiri · 2 Tuna Nigiri': '6 Tuna I/O · 6 Avocado Cheese · 2 Sake Nigiri · 2 Tuna Nigiri',
+  '6 Tiger Roll · 2 Ebi Nigiri · 2 Sake Nigiri · 6 Tatar Tuna · 2 Flamed Tuna Nigiri': '6 Tiger Roll · 2 Ebi Nigiri · 2 Sake Nigiri · 6 Tatar Tuna · 2 Flamed Tuna Nigiri',
+  'Set cao cấp nhẹ nhàng': 'Premium Light Set',
+  'Set thượng hạng': 'Deluxe Set',
+  'Set hoàng gia': 'Imperial Set',
+  'Set Origami tổng hợp 1': 'Origami Mix Set 1',
+  'Set Origami classic': 'Origami Classic Set',
+  'Set Origami yêu thích': 'Origami Favorites Set',
+  'Set sushi chay': 'Vegetarisches Sushi-Set',
+  'Set bơ các loại': 'Avocado-Variationen Set',
+  'Set chiên giòn': 'Knuspriges Set',
+  'Set đa dạng': 'Vielfalt Set',
+  'Set cổ điển tinh gọn': 'Klassisches Set kompakt',
+  'Set khai vị kèm rượu': 'Aperitif & Sushi Set',
+  // Chef's Choice
+  'Thực đơn đầu bếp 3 món': "Chef's 3-Gänge-Menü",
+  'Thực đơn đầu bếp 5 món cao cấp': "Chef's Premium 5-Gänge-Menü",
+  // Desserts (remaining)
+  'Chuối chiên mật ong': 'Gebratene Banane mit Honig',
+  'Súp cốt dừa với chuối': 'Kokossuppe mit Banane',
+  'Kem Mochi 3 vị': 'Mochi-Eis 3 Sorten',
+  'Kem trà xanh 3 viên': 'Matcha-Eis 3 Kugeln',
 };
 
 const NOTE_DE = {
