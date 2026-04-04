@@ -1,3 +1,9 @@
+// ── Admin nicknames ──
+const ADMIN_NICKS = ['linhklein', 'minh'];
+function isAdmin() {
+  return ADMIN_NICKS.includes(getCurrentPlayer().trim().toLowerCase());
+}
+
 // ── Lazy rendering state ──
 let _renderItems = []; // current filtered items
 let _renderShown = 0;  // how many are currently rendered
@@ -44,7 +50,7 @@ function renderCardHTML(d, scores, customNames) {
       </div>` : ''}`;
 
     const backGrad = getCardGradient(d.cat, cardType);
-    const canUpload = isDrinkOrFood && getCurrentPlayer().toLowerCase() === 'linhklein';
+    const canUpload = isDrinkOrFood && isAdmin();
     const uploadBtnHTML = canUpload
       ? `<button class="img-upload-btn" onclick="event.stopPropagation();uploadDrinkImage(${JSON.stringify(d.name).replace(/"/g,'&quot;')})">${d.img ? t('img_change') : t('img_add')}</button>`
       : '';
@@ -355,7 +361,7 @@ function confirmNick() {
     updateWeakCount();
     renderGrid(currentBrowseCat, currentSearch);
     // Nếu đang ở tab add mà mất quyền thì chuyển về browse
-    if (val.trim().toLowerCase() !== 'linhklein') {
+    if (!ADMIN_NICKS.includes(val.trim().toLowerCase())) {
       const addMode = document.getElementById('add-mode');
       if (addMode && addMode.style.display !== 'none') switchMode('browse');
     }
@@ -1364,7 +1370,7 @@ function showToast(msg, type = '') {
 ═══════════════════════════════════════ */
 // Ẩn/hiện tab "Nhập công thức" dựa trên nick hiện tại
 function applyAddTabVisibility() {
-  const isLinhklein = getCurrentPlayer().trim().toLowerCase() === 'linhklein';
+  const isLinhklein = isAdmin();
   document.querySelectorAll('.mode-tab').forEach(t => {
     if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'add'")) {
       t.style.display = isLinhklein ? '' : 'none';
@@ -1374,7 +1380,7 @@ function applyAddTabVisibility() {
 
 function switchMode(mode) {
   // Chỉ Linhklein mới được dùng tab Nhập công thức
-  if (getCurrentPlayer().trim().toLowerCase() !== 'linhklein' && mode === 'add') {
+  if (!isAdmin() && mode === 'add') {
     showToast(t('toast_no_perm'), 'red');
     return;
   }
