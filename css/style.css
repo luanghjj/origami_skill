@@ -242,13 +242,44 @@
       transform: rotateY(180deg);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 24px 18px;
-      overflow: hidden;
+      align-items: flex-start;
+      justify-content: flex-start;
+      text-align: left;
+      padding: 14px 16px;
+      overflow-y: auto;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
+      color: #fff;
+    }
+    .back-recipe {
+      width: 100%;
+      color: #fff;
+    }
+    .back-recipe h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .back-recipe .desc {
+      font-size: 0.82rem;
+      margin-bottom: 6px;
+    }
+    .back-recipe .ingredients-list {
+      font-size: 0.82rem;
+      margin-bottom: 6px;
+    }
+    .back-recipe .ingredients-list li::before {
+      color: rgba(255,255,255,0.7);
+    }
+    .back-recipe .glass-note {
+      font-size: 0.78rem;
+      background: rgba(255,255,255,0.15);
+      border: none;
+    }
+    .back-recipe .note-text {
+      font-size: 0.78rem;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
     }
     .flip-back .back-emoji {
       font-size: 4rem;

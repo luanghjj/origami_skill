@@ -32,7 +32,7 @@ function renderCardHTML(d, scores, customNames) {
       <h3 style="margin-bottom:4px;">${d.name}${isCustom ? ` <span style="font-size:0.65rem;background:var(--ac-light);color:var(--ac);padding:2px 7px;border-radius:8px;vertical-align:middle;">${t('badge_custom')}</span>` : ''}</h3>
       <p class="desc">${tDesc(d.desc)}</p>
       <ul class="ingredients-list">
-        ${d.ingredients.map(ing => `<li>${ing}</li>`).join('')}
+        ${d.ingredients.map(ing => `<li>${tIng(ing)}</li>`).join('')}
       </ul>
       ${d.glass ? `<div class="glass-note">
         <span>${cardType === 'food' ? '🍽️' : '🥃'} ${tGlass(d.glass)}</span>
@@ -44,10 +44,6 @@ function renderCardHTML(d, scores, customNames) {
       </div>` : ''}`;
 
     const backGrad = getCardGradient(d.cat, cardType);
-    const backEmoji = getCardEmoji(d.cat, d.name, cardType);
-    const backImgHTML = (isDrinkOrFood && d.img)
-      ? `<img class="back-img" src="${d.img}" alt="${d.name}" loading="lazy"><div class="back-img-overlay"></div>`
-      : '';
     const canUpload = isDrinkOrFood && getCurrentPlayer().toLowerCase() === 'linhklein';
     const uploadBtnHTML = canUpload
       ? `<button class="img-upload-btn" onclick="event.stopPropagation();uploadDrinkImage(${JSON.stringify(d.name).replace(/"/g,'&quot;')})">${d.img ? t('img_change') : t('img_add')}</button>`
@@ -55,19 +51,30 @@ function renderCardHTML(d, scores, customNames) {
     const deleteBtnHTML = (canUpload && d.img)
       ? `<button class="img-delete-btn" onclick="event.stopPropagation();deleteDrinkImage(${JSON.stringify(d.name).replace(/"/g,'&quot;')})">🗑</button>`
       : '';
+
+    // Back card: full Vietnamese recipe (mirror of front)
+    const backHTML = `
+      <span class="flip-hint">${t('flip_back')}</span>
+      <div class="back-recipe">
+        <div class="cat-badge" style="margin-bottom:6px;${getCatStyle(d.cat)}">${d.cat}</div>
+        <h3 style="margin-bottom:4px;color:inherit;">${d.name}</h3>
+        <p class="desc" style="color:inherit;opacity:0.85;">${d.desc}</p>
+        <ul class="ingredients-list" style="color:inherit;">
+          ${d.ingredients.map(ing => `<li>${ing}</li>`).join('')}
+        </ul>
+        ${d.glass ? `<div class="glass-note" style="color:inherit;opacity:0.9;">
+          <span>${cardType === 'food' ? '🍽️' : '🥃'} ${d.glass}</span>
+        </div>` : ''}
+        ${d.note ? `<div class="note-text" style="color:inherit;opacity:0.9;">💡 ${d.note}</div>` : ''}
+      </div>
+      ${uploadBtnHTML}
+      ${deleteBtnHTML}`;
+
     return `
     <div class="flip-container fade-in" onclick="this.classList.toggle('flipped')">
       <div class="flip-inner">
         <div class="flip-front drink-card" style="position:relative;">${frontHTML}</div>
-        <div class="flip-back" style="background:${backGrad};">
-          ${backImgHTML}
-          <span class="flip-hint">${t('flip_back')}</span>
-          ${(isDrinkOrFood && d.img) ? '' : `<div class="back-emoji">${backEmoji}</div>`}
-          <div class="back-name" style="${(isDrinkOrFood && d.img) ? 'position:relative;z-index:2;' : ''}">${d.desc}</div>
-          <div class="back-desc" style="${(isDrinkOrFood && d.img) ? 'position:relative;z-index:2;' : ''}">${d.name}</div>
-          ${uploadBtnHTML}
-          ${deleteBtnHTML}
-        </div>
+        <div class="flip-back" style="background:${backGrad};">${backHTML}</div>
       </div>
     </div>`;
 }
