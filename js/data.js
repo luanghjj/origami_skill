@@ -1070,11 +1070,11 @@ const DRINKS = [
   { cat: "Đồ uống không cồn", name: "Brita Wasser",        desc: "Nước lọc Brita", ingredients: ["Brita Wasser"], glass: "Ly nước", note: "Phục vụ lạnh hoặc nhiệt độ phòng" },
   { cat: "Đồ uống không cồn", name: "Coca-Cola",           desc: "Nước ngọt có ga", ingredients: ["Coca-Cola"], glass: "Ly cao", note: "Thêm đá, lát chanh tùy chọn", img: "images/coca-cola.png" },
   { cat: "Đồ uống không cồn", name: "Coca-Cola Zero",      desc: "Nước ngọt không calo", ingredients: ["Coca-Cola Zero"], glass: "Ly cao", note: "Thêm đá" },
-  { cat: "Đồ uống không cồn", name: "Fanta",               desc: "Nước cam có ga", ingredients: ["Fanta"], glass: "Ly cao", note: "Thêm đá" },
+  { cat: "Đồ uống không cồn", name: "Fanta",               desc: "Nước cam có ga", ingredients: ["Fanta"], glass: "Ly cao", note: "Thêm đá", img: "images/fanta.png" },
   { cat: "Đồ uống không cồn", name: "Spezi",               desc: "Hỗn hợp Coca và Fanta", ingredients: ["Coca-Cola", "Fanta"], glass: "Ly cao", note: "Tỉ lệ 1:1 — đổ Fanta trước, Coca-Cola sau" },
-  { cat: "Đồ uống không cồn", name: "Sprite",              desc: "Nước chanh có ga", ingredients: ["Sprite"], glass: "Ly cao", note: "Thêm đá, lát chanh" },
-  { cat: "Đồ uống không cồn", name: "Ginger Ale",          desc: "Nước gừng nhẹ có ga", ingredients: ["Ginger Ale"], glass: "Ly cao", note: "Vị gừng nhẹ, thêm đá" },
-  { cat: "Đồ uống không cồn", name: "Ginger Beer",         desc: "Nước gừng mạnh có ga", ingredients: ["Ginger Beer"], glass: "Ly cao", note: "Vị gừng mạnh hơn Ginger Ale" },
+  { cat: "Đồ uống không cồn", name: "Sprite",              desc: "Nước chanh có ga", ingredients: ["Sprite"], glass: "Ly cao", note: "Thêm đá, lát chanh", img: "images/sprite.png" },
+  { cat: "Đồ uống không cồn", name: "Ginger Ale",          desc: "Nước gừng nhẹ có ga", ingredients: ["Ginger Ale"], glass: "Ly cao", note: "Vị gừng nhẹ, thêm đá", img: "images/ginger-ale.png" },
+  { cat: "Đồ uống không cồn", name: "Ginger Beer",         desc: "Nước gừng mạnh có ga", ingredients: ["Ginger Beer"], glass: "Ly cao", note: "Vị gừng mạnh hơn Ginger Ale", img: "images/ginger-beer.png" },
   { cat: "Đồ uống không cồn", name: "Wild Peach",          desc: "Nước đào", ingredients: ["Wild Peach"], glass: "Ly cao", note: "Thêm đá" },
   { cat: "Đồ uống không cồn", name: "Apfelsaft",           desc: "Nước ép táo", ingredients: ["Nước ép táo (Apfelsaft)"], glass: "Ly thấp", note: "Có thể pha với nước khoáng (Schorle)" },
   { cat: "Đồ uống không cồn", name: "Maracujasaft",        desc: "Nước ép chanh dây", ingredients: ["Nước ép chanh dây (Maracujasaft)"], glass: "Ly thấp", note: "" },
@@ -1083,31 +1083,31 @@ const DRINKS = [
   { cat: "Đồ uống không cồn", name: "Schorle",             desc: "Nước ép pha nước khoáng", ingredients: ["Nước ép trái cây (tùy chọn)", "Nước khoáng có ga (Sprudel)"], glass: "Ly cao", note: "Tỉ lệ nước ép : nước khoáng = 1:1" },
 
   /* ─── Đồ uống nóng ─── */
-  { cat: "Đồ uống nóng", name: "Kaffee",        desc: "Cà phê đen", ingredients: ["Cà phê (Kaffee)"], glass: "Tách cà phê", note: "Phục vụ kèm đường và sữa" },
+  { cat: "Đồ uống nóng", name: "Kaffee",        desc: "Cà phê đen", ingredients: ["Cà phê (Kaffee)"], glass: "Tách cà phê", note: "Phục vụ kèm đường và sữa", img: "images/kaffee.png" },
   { cat: "Đồ uống nóng", name: "Espresso",      desc: "Cà phê Espresso 1 shot", ingredients: ["Espresso (1 shot)"], glass: "Demitasse (tách nhỏ)", note: "30ml, phục vụ kèm đường", img: "images/espresso.png" },
-  { cat: "Đồ uống nóng", name: "Doppio",        desc: "Espresso đôi (2 shot)", ingredients: ["Espresso đôi (2 shot)"], glass: "Tách Espresso lớn", note: "60ml" },
+  { cat: "Đồ uống nóng", name: "Doppio",        desc: "Espresso đôi (2 shot)", ingredients: ["Espresso đôi (2 shot)"], glass: "Tách Espresso lớn", note: "60ml", img: "images/doppio.png" },
   { cat: "Đồ uống nóng", name: "Cappuccino",    desc: "Espresso với sữa bọt", ingredients: ["Espresso (1 shot)", "Sữa nóng (Milch)", "Bọt sữa (Milchschaum)"], glass: "Tách Cappuccino 180ml", note: "1/3 Espresso – 1/3 sữa nóng – 1/3 bọt sữa, rắc bột cacao", img: "images/cappuccino.png" },
   { cat: "Đồ uống nóng", name: "Grün Tee",      desc: "Trà xanh", ingredients: ["Trà xanh (Grüntee)"], glass: "Ấm trà + tách", note: "Ủ 70–80°C, không dùng nước sôi", img: "images/green-tea.png" },
-  { cat: "Đồ uống nóng", name: "Jasmin Tee",    desc: "Trà nhài", ingredients: ["Trà nhài (Jasmintee)"], glass: "Ấm trà + tách", note: "" },
-  { cat: "Đồ uống nóng", name: "Ingwer Tee",    desc: "Trà gừng đặc biệt", ingredients: ["Gừng tươi (Ingwer)", "Trà nhài (Jasmintee)", "Mật ong (Honig)"], glass: "Ấm trà + tách", note: "Hãm gừng với trà nhài, thêm mật ong trước khi phục vụ" },
+  { cat: "Đồ uống nóng", name: "Jasmin Tee",    desc: "Trà nhài", ingredients: ["Trà nhài (Jasmintee)"], glass: "Ấm trà + tách", note: "", img: "images/jasmin-tee.png" },
+  { cat: "Đồ uống nóng", name: "Ingwer Tee",    desc: "Trà gừng đặc biệt", ingredients: ["Gừng tươi (Ingwer)", "Trà nhài (Jasmintee)", "Mật ong (Honig)"], glass: "Ấm trà + tách", note: "Hãm gừng với trà nhài, thêm mật ong trước khi phục vụ", img: "images/ingwer-tee.png" },
   { cat: "Đồ uống nóng", name: "Against Cold",  desc: "Trà giải cảm", ingredients: ["Gừng tươi (Ingwer)", "Trà nhài (Jasmintee)", "Mật ong (Honig)", "Chanh tươi (Zitrone)"], glass: "Ấm trà + tách", note: "Gừng + trà nhài, thêm mật ong và nước cốt chanh — thêm nhiều gừng hơn Ingwer Tee" },
 
   /* ─── Cocktail không cồn ─── */
   { cat: "Cocktail không cồn", name: "Asian Cooler",    desc: "Cocktail bạc hà - gừng mát lạnh", ingredients: ["Bạc hà tươi (Minze)", "Chanh tươi (Zitrone)", "Đường mía (Rohrzucker)", "Ginger Ale"], glass: "Ly cao (Highball)", note: "Giã nhuyễn bạc hà + chanh + đường mía (Muddling), thêm đá bào, top với Ginger Ale, trang trí lá bạc hà", img: "images/asian-cooler.png" },
-  { cat: "Cocktail không cồn", name: "Mango Mule",      desc: "Cocktail xoài cay nhẹ", ingredients: ["Nước ép xoài (Mangosaft)", "Mật ong (Honig)", "Nước cốt chanh (Zitronensaft)", "Ginger Beer"], glass: "Ly đồng (Copper Mug)", note: "Mix xoài + mật ong + chanh, thêm đá, top với Ginger Beer, trang trí lát chanh" },
-  { cat: "Cocktail không cồn", name: "Yuzu Limonade",   desc: "Nước chanh Yuzu Nhật Bản", ingredients: ["Nước chanh Yuzu (Yuzusaft)", "Mật ong (Honig)", "Soda / Nước có ga"], glass: "Ly cao", note: "Mix Yuzu + mật ong, thêm đá, top với Soda, trang trí lát chanh vàng" },
+  { cat: "Cocktail không cồn", name: "Mango Mule",      desc: "Cocktail xoài cay nhẹ", ingredients: ["Nước ép xoài (Mangosaft)", "Mật ong (Honig)", "Nước cốt chanh (Zitronensaft)", "Ginger Beer"], glass: "Ly đồng (Copper Mug)", note: "Mix xoài + mật ong + chanh, thêm đá, top với Ginger Beer, trang trí lát chanh", img: "images/mango-mule.png" },
+  { cat: "Cocktail không cồn", name: "Yuzu Limonade",   desc: "Nước chanh Yuzu Nhật Bản", ingredients: ["Nước chanh Yuzu (Yuzusaft)", "Mật ong (Honig)", "Soda / Nước có ga"], glass: "Ly cao", note: "Mix Yuzu + mật ong, thêm đá, top với Soda, trang trí lát chanh vàng", img: "images/yuzu-limonade.png" },
 
   /* ─── Bia ─── */
   { cat: "Bia", name: "Kirin Ichiban",    desc: "Bia Nhật Bản cao cấp", ingredients: ["Kirin Ichiban (chai/lon)"], glass: "Ly bia / Ly Pilsner", note: "Bia Nhật vị nhẹ, bọt vừa — rót nghiêng ly 45°", img: "images/kirin-ichiban.png" },
   { cat: "Bia", name: "Kirin Ichiban 0%", desc: "Bia Nhật không cồn", ingredients: ["Kirin Ichiban 0% (chai)"], glass: "Ly bia", note: "Không cồn, vị tương tự Kirin thường" },
-  { cat: "Bia", name: "Hefeweizen",       desc: "Bia lúa mì truyền thống Đức", ingredients: ["Hefeweizen (chai/lon)"], glass: "Ly Weizen cao", note: "Rót từ từ, dựng bia xoay cho men nổi đều" },
-  { cat: "Bia", name: "Radler",           desc: "Bia pha nước chanh", ingredients: ["Bia (Hefeweizen hoặc Pils)", "Nước chanh ngọt (Limonade)"], glass: "Ly bia cao", note: "Tỉ lệ bia : Limonade = 1:1, rót đồng thời hoặc bia trước" },
+  { cat: "Bia", name: "Hefeweizen",       desc: "Bia lúa mì truyền thống Đức", ingredients: ["Hefeweizen (chai/lon)"], glass: "Ly Weizen cao", note: "Rót từ từ, dựng bia xoay cho men nổi đều", img: "images/hefeweizen.png" },
+  { cat: "Bia", name: "Radler",           desc: "Bia pha nước chanh", ingredients: ["Bia (Hefeweizen hoặc Pils)", "Nước chanh ngọt (Limonade)"], glass: "Ly bia cao", note: "Tỉ lệ bia : Limonade = 1:1, rót đồng thời hoặc bia trước", img: "images/radler.png" },
 
   /* ─── Khai vị & Cocktail có cồn ─── */
   { cat: "Khai vị & Cocktail", name: "Hugo",            desc: "Khai vị hoa cơm cháy mùa hè", ingredients: ["Prosecco", "Bạc hà tươi (Minze)", "Chanh tươi (Zitrone)", "Siro hoa cơm cháy (Holunderblütensirup)"], glass: "Ly Wine / Ly Champagne", note: "Thêm đá, mint + chanh + siro, top với Prosecco — trang trí cành bạc hà", img: "images/hugo.png" },
   { cat: "Khai vị & Cocktail", name: "Aperol Spritz",   desc: "Khai vị Aperol cổ điển", ingredients: ["Aperol", "Prosecco", "Soda / Nước có ga"], glass: "Ly Wine lớn (250ml)", note: "Tỉ lệ Aperol : Prosecco : Soda = 3 : 2 : 1 — thêm đá, trang trí lát cam", img: "images/aperol-spritz.png" },
-  { cat: "Khai vị & Cocktail", name: "Lillet Peach",    desc: "Khai vị Lillet vị đào", ingredients: ["Lillet Blanc", "Nước đào (Wild Peach)"], glass: "Ly Wine", note: "Thêm đá, trang trí lát chanh hoặc lá bạc hà" },
-  { cat: "Khai vị & Cocktail", name: "Whiskey Coke",    desc: "Whiskey pha Coca-Cola", ingredients: ["Whiskey (Jack Daniel's hoặc tương tự)", "Coca-Cola"], glass: "Ly Highball", note: "Tỉ lệ Whiskey : Coca = 1:3, thêm đá, trang trí lát chanh tùy chọn" },
+  { cat: "Khai vị & Cocktail", name: "Lillet Peach",    desc: "Khai vị Lillet vị đào", ingredients: ["Lillet Blanc", "Nước đào (Wild Peach)"], glass: "Ly Wine", note: "Thêm đá, trang trí lát chanh hoặc lá bạc hà", img: "images/lillet-peach.png" },
+  { cat: "Khai vị & Cocktail", name: "Whiskey Coke",    desc: "Whiskey pha Coca-Cola", ingredients: ["Whiskey (Jack Daniel's hoặc tương tự)", "Coca-Cola"], glass: "Ly Highball", note: "Tỉ lệ Whiskey : Coca = 1:3, thêm đá, trang trí lát chanh tùy chọn", img: "images/whiskey-coke.png" },
   { cat: "Khai vị & Cocktail", name: "Moscow Mule",     desc: "Cocktail Vodka gừng", ingredients: ["Vodka", "Ginger Beer", "Nước cốt chanh (Zitronensaft)"], glass: "Ly đồng (Copper Mug)", note: "Vodka + nước cốt chanh + đá, top với Ginger Beer, trang trí lát chanh + lá bạc hà", img: "images/moscow-mule.png" },
   { cat: "Khai vị & Cocktail", name: "Gin Tonic (Roku)", desc: "Gin Tonic với Roku Gin", ingredients: ["Roku Gin", "Tonic Water"], glass: "Ly Balloon / Ly Highball", note: "Tỉ lệ 1:3 — thêm đá, trang trí theo phong cách Roku (vỏ cam, lá húng quế...)", img: "images/gin-tonic-roku.png" },
   { cat: "Khai vị & Cocktail", name: "Gin Tonic (Kaiza)",    desc: "Gin Tonic với Kaiza Gin", ingredients: ["Kaiza Gin", "Tonic Water"], glass: "Ly Balloon / Ly Highball", note: "Tỉ lệ 1:3 — thêm đá" },
@@ -1115,11 +1115,11 @@ const DRINKS = [
 
   /* ─── Sake & Rượu vang ─── */
   { cat: "Sake & Rượu vang", name: "Sake SOTO",             desc: "Rượu gạo Nhật Bản cao cấp", ingredients: ["Sake SOTO"], glass: "Chén sake (Ochoko) hoặc ly nhỏ", note: "Có thể phục vụ lạnh (Reishu), nhiệt độ phòng (Jōon) hoặc nóng (Atsukan)", img: "images/sake-soto.png" },
-  { cat: "Sake & Rượu vang", name: "Weißwein — Riesling",   desc: "Rượu vang trắng Riesling", ingredients: ["Riesling (vang trắng)"], glass: "Ly vang trắng", note: "Phục vụ lạnh 8–10°C" },
+  { cat: "Sake & Rượu vang", name: "Weißwein — Riesling",   desc: "Rượu vang trắng Riesling", ingredients: ["Riesling (vang trắng)"], glass: "Ly vang trắng", note: "Phục vụ lạnh 8–10°C", img: "images/riesling.png" },
   { cat: "Sake & Rượu vang", name: "Weißwein — Chardonnay", desc: "Rượu vang trắng Chardonnay", ingredients: ["Chardonnay (vang trắng)"], glass: "Ly vang trắng", note: "Phục vụ lạnh 10–12°C" },
-  { cat: "Sake & Rượu vang", name: "Rotwein",               desc: "Rượu vang đỏ", ingredients: ["Rượu vang đỏ (Rotwein)"], glass: "Ly vang đỏ (rộng hơn)", note: "Nhiệt độ phòng 16–18°C" },
+  { cat: "Sake & Rượu vang", name: "Rotwein",               desc: "Rượu vang đỏ", ingredients: ["Rượu vang đỏ (Rotwein)"], glass: "Ly vang đỏ (rộng hơn)", note: "Nhiệt độ phòng 16–18°C", img: "images/rotwein.png" },
   { cat: "Sake & Rượu vang", name: "Rosé",                  desc: "Rượu vang hồng", ingredients: ["Rượu vang hồng (Rosé)"], glass: "Ly vang hồng", note: "Phục vụ lạnh 10–12°C", img: "images/rose.png" },
-  { cat: "Sake & Rượu vang", name: "Champagner",            desc: "Rượu Sâm banh / Champagne", ingredients: ["Champagne / Sekt"], glass: "Ly Champagne (Flute)", note: "Phục vụ lạnh 6–8°C, rót từ từ nghiêng ly" },
+  { cat: "Sake & Rượu vang", name: "Champagner",            desc: "Rượu Sâm banh / Champagne", ingredients: ["Champagne / Sekt"], glass: "Ly Champagne (Flute)", note: "Phục vụ lạnh 6–8°C, rót từ từ nghiêng ly", img: "images/champagner.png" },
 ];
 
 /* ═══════════════════════════════════════
