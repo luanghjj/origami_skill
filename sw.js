@@ -1,7 +1,9 @@
-const CACHE_NAME = 'origami-v15';
+const CACHE_NAME = 'origami-v16';
 const ASSETS = [
   './',
   './index.html',
+  './css/style.css',
+  './js/app.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
   './images/brita-wasser.png',
   './images/coca-cola.png',
@@ -70,7 +72,21 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
-  // Cache-first for static assets
+  // Network-first for HTML, JS, CSS (always get latest)
+  const url = new URL(e.request.url);
+  if (url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css') || url.pathname === '/') {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  // Cache-first for images and other static assets
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
