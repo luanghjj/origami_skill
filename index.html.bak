@@ -1,3 +1,2908 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Origami Bar">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <title>Origami — Luyện Tập Công Thức Đồ Uống</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    :root {
+      --ac: #2563eb;
+      --ac-light: #eff6ff;
+      --ac-dark: #1d4ed8;
+      --red: #dc2626;
+      --red-dark: #b91c1c;
+      --red-light: #fef2f2;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --yellow: #d97706;
+      --yellow-light: #fef3c7;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+      --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.08), 0 12px 24px rgba(0, 0, 0, 0.1);
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner {
+      width: 13px;
+      height: 13px;
+      border: 2px solid rgba(37, 99, 235, .15);
+      border-top-color: var(--ac);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      display: inline-block;
+    }
+
+    /* ── Nickname badge ── */
+    .nick-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text);
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+
+    .nick-badge:hover {
+      background: white;
+      border-color: var(--ac);
+      color: var(--ac);
+    }
+
+    /* ── Language toggle ── */
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.18s;
+    }
+
+    .lang-toggle:hover {
+      border-color: var(--ac);
+      background: white;
+    }
+
+    /* ── Nickname modal ── */
+    .nick-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nick-overlay.open {
+      display: flex;
+    }
+
+    .nick-modal {
+      background: white;
+      border-radius: 16px;
+      padding: 32px 28px;
+      width: 340px;
+      max-width: 92vw;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+      text-align: center;
+    }
+
+    .nick-modal h3 {
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+      color: var(--ac);
+    }
+
+    .nick-modal p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .nick-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      text-align: center;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .nick-input:focus {
+      border-color: var(--ac);
+    }
+
+    .nick-confirm {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--ac);
+      color: white;
+      border: none;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .nick-confirm:hover {
+      background: var(--ac-dark);
+    }
+
+    .nick-players-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 14px;
+    }
+
+    .nick-players-hint .nick-pick {
+      display: inline-block;
+      background: var(--ac-light);
+      color: var(--ac);
+      padding: 2px 10px;
+      border-radius: 8px;
+      margin: 2px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .nick-players-hint .nick-pick:hover {
+      background: var(--ac);
+      color: white;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: #ffffff;
+      color: var(--text);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    .logo {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+
+    .logo::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--ac);
+      border-radius: 50%;
+    }
+
+    .logo span {
+      opacity: 0.45;
+      font-weight: 400;
+      font-size: 0.73rem;
+      letter-spacing: 0.3px;
+      text-transform: none;
+      margin-left: 0;
+    }
+
+    .mode-tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 3px;
+      border: 1px solid var(--border);
+    }
+
+    .mode-tab {
+      padding: 5px 13px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+
+    .mode-tab.active {
+      background: var(--text);
+      color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .mode-tab:hover:not(.active) {
+      background: white;
+      color: var(--text);
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 16px;
+      background: var(--ac);
+      border-radius: 4px;
+    }
+
+    /* ══════════════════════════════════════
+       BROWSE MODE
+    ══════════════════════════════════════ */
+    #browse-mode {
+      display: block;
+    }
+
+    #train-mode {
+      display: none;
+    }
+
+    #history-mode {
+      display: none;
+    }
+
+    /* ── History Tab ── */
+    .hist-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .hist-stat-box {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 16px 14px;
+      text-align: center;
+    }
+
+    .hist-stat-box .h-val {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--ac);
+      line-height: 1;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .hist-stat-box .h-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .hist-table-wrap {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+
+    .hist-table-title {
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .hist-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .hist-table th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .hist-table td {
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hist-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .hist-table tr:hover td {
+      background: var(--bg);
+    }
+
+    .pct-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pct-bar {
+      height: 6px;
+      border-radius: 3px;
+      flex: 1;
+      background: var(--border);
+      overflow: hidden;
+      min-width: 60px;
+    }
+
+    .pct-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s;
+    }
+
+    .pct-text {
+      font-size: 0.78rem;
+      font-weight: 700;
+      min-width: 34px;
+      text-align: right;
+    }
+
+    .hist-day-list {
+      padding: 0 18px 14px;
+    }
+
+    .hist-day-item {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hist-day-item:last-child {
+      border-bottom: none;
+    }
+
+    .hist-day-date {
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 110px;
+    }
+
+    .hist-day-detail {
+      flex: 1;
+      color: var(--text);
+    }
+
+    .hist-day-score {
+      font-weight: 700;
+    }
+
+    .hist-empty {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--ac-light);
+      color: var(--ac);
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .cat-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .cat-btn {
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: all 0.18s;
+      color: var(--text-muted);
+      font-family: inherit;
+    }
+
+    .cat-btn.active {
+      background: var(--text);
+      color: white;
+      border-color: transparent;
+    }
+
+    .cat-btn:hover:not(.active) {
+      background: white;
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+
+    .drink-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+      gap: 14px;
+    }
+
+    /* ── FLIP CARD ── */
+    .flip-container {
+      perspective: 900px;
+      cursor: pointer;
+    }
+
+    .flip-inner {
+      position: relative;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .flip-container.flipped .flip-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-front,
+    .flip-back {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius);
+    }
+
+    .flip-front {
+      position: relative;
+      z-index: 2;
+    }
+
+    .flip-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: rotateY(180deg) !important;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 20px;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+      border: 2px solid #2e7d32 !important;
+      background: linear-gradient(135deg, #e8f5e9 0%, #fff8e1 100%) !important;
+    }
+
+    .flip-back .back-emoji {
+      font-size: 4rem;
+      line-height: 1;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+    }
+
+    .flip-back .back-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      letter-spacing: -0.3px;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .flip-back .back-desc {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
+    }
+
+    .flip-back .back-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--radius);
+    }
+
+    .flip-back .back-img-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.1) 60%);
+      border-radius: var(--radius);
+    }
+
+    .flip-back .back-img~.back-name,
+    .flip-back .back-img~.back-desc {
+      position: relative;
+      z-index: 2;
+    }
+
+    .flip-front .flip-hint {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      font-size: 0.62rem;
+      color: rgba(0, 0, 0, 0.35);
+      font-weight: 600;
+      z-index: 3;
+    }
+
+    .flip-back .flip-hint {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      font-size: 0.62rem;
+      color: #2e7d32;
+      font-weight: 700;
+      z-index: 3;
+    }
+
+    .flip-back .img-upload-btn {
+      display: inline-block;
+      margin-top: 8px;
+      background: #2e7d32;
+      border: none;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+    }
+
+    .flip-back .img-upload-btn:hover {
+      background: #1b5e20;
+    }
+
+    .flip-back .img-delete-btn {
+      display: inline-block;
+      margin-top: 8px;
+      margin-left: 6px;
+      background: rgba(220, 38, 38, 0.15);
+      border: 1.5px solid rgba(220, 38, 38, 0.4);
+      color: #c62828;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+    }
+
+    .flip-back .img-delete-btn:hover {
+      background: rgba(220, 38, 38, 0.3);
+    }
+
+    /* ── Edit card modal ── */
+    .edit-card-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(3px);
+    }
+    .edit-card-overlay.open { display: flex; }
+    .edit-card-modal {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      width: 460px;
+      max-width: 94vw;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    }
+    .edit-card-modal h3 {
+      font-size: 1.1rem;
+      color: var(--ac);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .edit-card-modal label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
+    .edit-card-modal input,
+    .edit-card-modal textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+      box-sizing: border-box;
+      transition: border 0.2s;
+    }
+    .edit-card-modal input:focus,
+    .edit-card-modal textarea:focus {
+      border-color: var(--ac);
+    }
+    .edit-card-modal textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .edit-card-modal .edit-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .edit-card-modal .edit-actions button {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .edit-card-modal .btn-save {
+      background: var(--ac);
+      color: white;
+    }
+    .edit-card-modal .btn-save:hover { opacity: 0.85; }
+    .edit-card-modal .btn-cancel {
+      background: var(--bg-card);
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+    }
+    .edit-card-modal .btn-cancel:hover { background: #f1f1f1; }
+    .edit-card-modal .btn-reset {
+      background: rgba(220,38,38,0.1);
+      color: #c62828;
+      border: 1.5px solid rgba(220,38,38,0.3);
+      flex: 0.6;
+    }
+    .edit-card-modal .btn-reset:hover { background: rgba(220,38,38,0.2); }
+    .flip-back .card-edit-btn {
+      display: inline-block;
+      margin-top: 8px;
+      margin-left: 6px;
+      background: #1565c0;
+      border: none;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+    }
+    .flip-back .card-edit-btn:hover { background: #0d47a1; }
+
+    /* ── Front card with image: two-column layout ── */
+    .card-with-img {
+      display: flex;
+      gap: 0;
+    }
+
+    .card-with-img .card-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-with-img .card-thumb-col {
+      width: 110px;
+      min-width: 110px;
+      margin: -20px -20px -20px 12px;
+      border-radius: 0 16px 16px 0;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .card-with-img .card-thumb-col img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-with-img .card-thumb-col:hover {
+      filter: brightness(1.05);
+    }
+
+    /* ── Fullscreen image modal ── */
+    .img-fullscreen-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+      animation: fadeIn 0.2s;
+    }
+
+    .img-fullscreen-overlay img {
+      max-width: 92vw;
+      max-height: 88vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .img-fullscreen-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      color: #fff;
+      font-size: 2rem;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.4);
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+    }
+
+    .drink-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      border-top: 2.5px solid transparent;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: default;
+    }
+
+    .drink-card:not(.flip-back):hover {
+      border-top-color: var(--ac);
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* Only lift non-flip cards */
+    .drink-card:not(.flip-front):not(.flip-back):hover {
+      transform: translateY(-2px);
+    }
+
+    .flip-container .drink-card {
+      cursor: pointer;
+    }
+
+    .flip-container .drink-card::after {
+      content: '🔄 Lật xem';
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      opacity: 0;
+      transition: opacity 0.2s;
+      font-weight: 600;
+    }
+
+    .flip-container:hover .drink-card::after {
+      opacity: 1;
+    }
+
+    .flip-front.drink-card {
+      position: relative;
+    }
+
+    .drink-card .cat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      padding: 3px 9px;
+      border-radius: 6px;
+      margin-bottom: 9px;
+    }
+
+    .drink-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+
+    .drink-card .desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      line-height: 1.45;
+    }
+
+    .ingredients-list {
+      list-style: none;
+      counter-reset: ing;
+    }
+
+    .ingredients-list li {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.84rem;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      counter-increment: ing;
+    }
+
+    .ingredients-list li:last-child {
+      border-bottom: none;
+    }
+
+    .ingredients-list li::before {
+      content: counter(ing);
+      min-width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      background: var(--bg);
+      color: var(--text-muted);
+      font-size: 0.65rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .drink-card .glass-note {
+      margin-top: 10px;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .drink-card .glass-note span {
+      background: var(--bg);
+      padding: 3px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-weight: 500;
+    }
+
+    .drink-card .note-text {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 7px 10px;
+      background: var(--yellow-light);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--yellow);
+    }
+
+    /* ══════════════════════════════════════
+       TRAIN MODE
+    ══════════════════════════════════════ */
+    .train-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .train-stats {
+      display: flex;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .stat-box {
+      background: white;
+      border-radius: 10px;
+      padding: 10px 16px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--ac);
+      min-width: 60px;
+    }
+
+    .stat-box .label {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .stat-box .value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.1;
+    }
+
+    .stat-box.correct {
+      border-left-color: var(--green);
+      background: var(--green-light);
+    }
+
+    .stat-box.correct .value {
+      color: var(--green);
+    }
+
+    .train-settings {
+      background: white;
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .train-settings-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .train-settings .bottom-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .cat-check {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.79rem;
+      cursor: pointer;
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      transition: all 0.18s;
+      user-select: none;
+      font-weight: 600;
+      font-family: inherit;
+    }
+
+    .cat-check input {
+      display: none;
+    }
+
+    .cat-check.checked {
+      border-color: var(--ac);
+      color: var(--ac);
+      background: var(--ac-light);
+      font-weight: 700;
+    }
+
+    .cat-check:hover:not(.checked) {
+      background: white;
+      color: var(--text);
+    }
+
+    .btn-start {
+      margin-left: auto;
+      padding: 8px 24px;
+      background: var(--text);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+    }
+
+    .btn-start:hover {
+      background: var(--ac);
+      transform: translateY(-1px);
+    }
+
+    /* ── FLASHCARD ── */
+    .flashcard-container {
+      perspective: 1000px;
+      margin-bottom: 14px;
+    }
+
+    .flashcard {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 36px 32px 28px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.3s;
+    }
+
+    .flashcard::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--ac-dark), var(--ac), #60a5fa);
+    }
+
+    .flashcard .drink-number {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .flashcard .drink-category-label {
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: var(--ac-light);
+      color: var(--ac);
+      margin-bottom: 14px;
+      display: inline-block;
+      text-transform: uppercase;
+      border: 1px solid rgba(37, 99, 235, 0.15);
+    }
+
+    .flashcard .drink-name {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .flashcard .drink-desc {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      font-style: italic;
+      max-width: 380px;
+    }
+
+    /* ── INPUT AREA ── */
+    .input-area {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .input-area h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .ingredient-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ingredient-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ingredient-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    .ingredient-row input:focus {
+      border-color: var(--red);
+    }
+
+    .ingredient-row input.correct {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+
+    .ingredient-row input.wrong {
+      border-color: var(--red);
+      background: var(--red-light);
+    }
+
+    .ingredient-row input.partial {
+      border-color: var(--yellow);
+      background: var(--yellow-light);
+    }
+
+    .ingredient-row .remove-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .ingredient-row .remove-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .ingredient-row .status-icon {
+      font-size: 1.1rem;
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .add-row-btn {
+      margin-top: 8px;
+      padding: 8px 16px;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .add-row-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* ── Chip selector ── */
+    .chip-instruction {
+      text-align: center;
+      font-size: 0.87rem;
+      margin: 0 0 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .chip-instruction strong {
+      color: var(--ac);
+    }
+
+    .chip-pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      padding: 12px 8px;
+      min-height: 56px;
+      background: var(--bg);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 0.84rem;
+      font-weight: 500;
+      font-family: inherit;
+      transition: all 0.17s cubic-bezier(.34, 1.56, .64, 1);
+      user-select: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .chip:hover:not([disabled]) {
+      border-color: var(--ac);
+      background: var(--ac-light);
+      color: var(--ac);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+
+    .chip.selected {
+      border-color: var(--ac);
+      background: var(--ac);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .chip.chip-correct {
+      border-color: var(--green) !important;
+      background: var(--green) !important;
+      color: #fff !important;
+      font-weight: 700;
+      animation: chipPop 0.3s ease;
+    }
+
+    .chip.chip-wrong {
+      border-color: #dc2626 !important;
+      background: #dc2626 !important;
+      color: #fff !important;
+      animation: chipShake 0.4s ease;
+    }
+
+    .chip.chip-missed {
+      border-color: var(--yellow) !important;
+      background: var(--yellow-light) !important;
+      color: #92400e !important;
+      font-weight: 700;
+      border-style: dashed !important;
+      animation: chipPulse 0.6s ease;
+    }
+
+    .chip[disabled] {
+      cursor: default;
+    }
+
+    @keyframes chipShake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-5px);
+      }
+
+      40% {
+        transform: translateX(5px);
+      }
+
+      60% {
+        transform: translateX(-3px);
+      }
+
+      80% {
+        transform: translateX(3px);
+      }
+    }
+
+    @keyframes chipPop {
+      0% {
+        transform: scale(0.9);
+      }
+
+      50% {
+        transform: scale(1.08);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes chipPulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      padding: 9px 20px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.84rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-check {
+      background: var(--ac);
+      color: white;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-check:hover {
+      background: var(--ac-dark);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-reveal {
+      background: var(--yellow-light);
+      color: #92400e;
+      border: 1.5px solid var(--yellow);
+    }
+
+    .btn-reveal:hover {
+      background: var(--yellow);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .btn-next {
+      background: var(--text);
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-next:hover {
+      background: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    .btn-reset {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-reset:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    /* ── RESULT PANEL ── */
+    .result-panel {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      display: none;
+      animation: slideIn 0.22s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-panel.all-correct {
+      background: var(--green-light);
+      border: 1.5px solid var(--green);
+    }
+
+    .result-panel.partial-correct {
+      background: var(--yellow-light);
+      border: 1.5px solid var(--yellow);
+    }
+
+    .result-panel.revealed {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+    }
+
+    .result-panel h4 {
+      font-size: 0.9rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .result-panel.all-correct h4 {
+      color: var(--green);
+    }
+
+    .result-panel.partial-correct h4 {
+      color: #92400e;
+    }
+
+    .correct-list-detail {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
+
+    .correct-list-detail .cl-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .correct-list-detail ol {
+      padding-left: 18px;
+      margin: 0;
+    }
+
+    .correct-list-detail li {
+      padding: 2px 0;
+      color: var(--text);
+    }
+
+    .wrong-breakdown {
+      margin-top: 18px;
+      text-align: left;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .wrong-breakdown summary {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px 0;
+    }
+
+    .wrong-breakdown .wb-item {
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: var(--red-light);
+      border: 1px solid rgba(220, 38, 38, 0.15);
+      margin-bottom: 6px;
+    }
+
+    .wrong-breakdown .wb-name {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .wrong-breakdown .wb-list {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .correct-answer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .answer-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .answer-tag.hit {
+      background: var(--green-light);
+      color: var(--green);
+      border: 1.5px solid var(--green);
+    }
+
+    .answer-tag.miss {
+      background: var(--red-light);
+      color: var(--red);
+      border: 1.5px solid var(--red);
+    }
+
+    .note-reveal {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 8px 12px;
+      background: white;
+      border-radius: 8px;
+      border-left: 3px solid var(--yellow);
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      height: 6px;
+      background: var(--border);
+      border-radius: 6px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ac-dark), var(--ac), #60a5fa);
+      border-radius: 6px;
+      transition: width 0.45s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    /* ── DONE SCREEN ── */
+    .done-screen {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 52px 32px 44px;
+      text-align: center;
+      display: none;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .done-screen::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--ac-dark), var(--ac), #60a5fa, var(--green));
+    }
+
+    .done-screen.show {
+      display: block;
+    }
+
+    .done-emoji {
+      font-size: 4rem;
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+
+    .done-screen h2 {
+      font-size: 1.8rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .done-screen .final-score {
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: var(--ac);
+      font-family: 'JetBrains Mono', monospace;
+      margin: 18px 0 8px;
+      line-height: 1;
+    }
+
+    .done-screen p {
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      font-size: 1rem;
+    }
+
+    .done-screen .btn-restart {
+      padding: 12px 32px;
+      font-size: 0.95rem;
+      background: var(--text);
+      color: white;
+    }
+
+    .done-screen .btn-restart:hover {
+      background: var(--ac);
+    }
+
+    /* ── SCORE LEVEL 1-5 ── */
+    .score-level-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 18px 0 6px;
+    }
+
+    .score-level-wrap .star {
+      font-size: 1.6rem;
+      transition: all 0.3s ease;
+      filter: grayscale(1) opacity(0.25);
+    }
+
+    .score-level-wrap .star.filled {
+      filter: none;
+      animation: starPop 0.35s ease forwards;
+    }
+
+    @keyframes starPop {
+      0% {
+        transform: scale(0.3);
+        opacity: 0;
+      }
+
+      60% {
+        transform: scale(1.25);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .score-level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin: 10px 0 4px;
+    }
+
+    .score-level-badge .level-num {
+      font-size: 1.8rem;
+      font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+    }
+
+    .score-level-badge .level-label {
+      text-align: left;
+      line-height: 1.2;
+    }
+
+    .score-level-badge .level-label small {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
+    .slv-1 {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .slv-2 {
+      background: #fff7ed;
+      color: #ea580c;
+    }
+
+    .slv-3 {
+      background: var(--yellow-light);
+      color: var(--yellow);
+    }
+
+    .slv-4 {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .slv-5 {
+      background: var(--ac-light);
+      color: var(--ac);
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 9px 14px 9px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      background: white;
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--ac);
+    }
+
+    .search-wrap .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .search-wrap .clear-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: none;
+      line-height: 1;
+    }
+
+    .search-wrap.has-value .clear-btn {
+      display: block;
+    }
+
+    .weak-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.79rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: all 0.18s;
+      user-select: none;
+      color: var(--text-muted);
+      font-family: inherit;
+    }
+
+    .weak-toggle input {
+      display: none;
+    }
+
+    .weak-toggle.on {
+      border-color: var(--yellow);
+      color: #92400e;
+      background: var(--yellow-light);
+    }
+
+    .weak-score {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-left: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .score-good {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .score-mid {
+      background: var(--yellow-light);
+      color: #92400e;
+    }
+
+    .score-bad {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .score-none {
+      background: #f1f5f9;
+      color: var(--text-muted);
+    }
+
+    /* ── RESPONSIVE ── */
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      header {
+        height: auto;
+        padding: 8px 14px;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .mode-tabs {
+        width: 100%;
+        justify-content: center;
+        overflow-x: auto;
+      }
+
+      .mode-tab {
+        padding: 6px 12px;
+        font-size: 0.73rem;
+        min-height: 36px;
+      }
+
+      .logo span {
+        display: none;
+      }
+
+      .train-stats {
+        gap: 6px;
+      }
+
+      .stat-box {
+        padding: 7px 10px;
+      }
+
+      .flashcard .drink-name {
+        font-size: 1.5rem;
+      }
+
+      .action-buttons {
+        justify-content: center;
+      }
+
+      .btn {
+        padding: 8px 12px;
+        font-size: 0.82rem;
+      }
+
+      .form-card {
+        padding: 16px;
+      }
+
+      .cat-btn {
+        padding: 6px 14px;
+        min-height: 36px;
+      }
+
+      .cat-check {
+        padding: 6px 14px;
+        min-height: 36px;
+      }
+
+      main {
+        padding: 20px 14px 60px;
+      }
+
+      .done-screen .final-score {
+        font-size: 2.4rem;
+      }
+
+      .done-emoji {
+        font-size: 3rem;
+      }
+    }
+
+    @media (max-width: 374px) {
+      .flashcard .drink-name {
+        font-size: 1.25rem;
+      }
+
+      .done-screen .final-score {
+        font-size: 2rem;
+      }
+
+      .hist-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .mode-tab {
+        padding: 5px 8px;
+        font-size: 0.68rem;
+      }
+    }
+
+    /* ── FOCUS / ACTIVE / DISABLED ── */
+    :focus-visible {
+      outline: 2px solid var(--ac);
+      outline-offset: 2px;
+    }
+
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: none;
+    }
+
+    .btn:active,
+    .chip:active,
+    .mode-tab:active,
+    .cat-btn:active,
+    .type-btn:active,
+    .cat-check:active,
+    .nick-badge:active,
+    .btn-start:active,
+    .ca-btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn:disabled,
+    .btn-start:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .chip[disabled] {
+      opacity: 0.55;
+      cursor: default;
+      transform: none !important;
+    }
+
+    .nick-players-hint .nick-pick {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* ── TAB TRANSITION ── */
+    #browse-mode,
+    #train-mode,
+    #add-mode,
+    #history-mode {
+      animation: fadeIn 0.25s ease;
+    }
+
+    /* ── FADE ANIMATION ── */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    /* ── EMPTY ── */
+    .empty-msg {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 40px;
+      font-size: 0.95rem;
+    }
+
+    /* ══════════════════════════════════════
+       ADD / EDIT MODE
+    ══════════════════════════════════════ */
+    #add-mode {
+      display: none;
+    }
+
+    .form-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      max-width: 640px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 16px;
+    }
+
+    .form-row label {
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-row label span.required {
+      color: var(--red);
+    }
+
+    .form-input {
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+      background: white;
+    }
+
+    .form-input:focus {
+      border-color: var(--ac);
+    }
+
+    .form-input.error {
+      border-color: var(--red);
+    }
+
+    .ing-form-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ing-form-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      cursor: default;
+      transition: opacity 0.18s;
+    }
+
+    .ing-form-row.drag-over {
+      border-top: 2px solid var(--ac);
+      margin-top: -2px;
+    }
+
+    .ing-form-row.dragging {
+      opacity: 0.35;
+    }
+
+    .ing-drag-handle {
+      cursor: grab;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      padding: 10px 6px;
+      flex-shrink: 0;
+      user-select: none;
+      line-height: 1;
+      touch-action: none;
+      min-width: 32px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ing-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .ing-order-num {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--ac);
+      min-width: 16px;
+      text-align: right;
+      flex-shrink: 0;
+      opacity: 0.75;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .ing-form-row input {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .ing-form-row input:focus {
+      border-color: var(--ac);
+    }
+
+    .ing-form-row .rm-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .ing-form-row .rm-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .add-ing-btn {
+      margin-top: 6px;
+      padding: 6px 12px;
+      border: 1.5px dashed var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-family: inherit;
+      width: 100%;
+      transition: all 0.18s;
+    }
+
+    .add-ing-btn:hover {
+      border-color: var(--ac);
+      color: var(--ac);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn-save {
+      background: var(--ac);
+      color: white;
+    }
+
+    .btn-save:hover {
+      background: var(--ac-dark);
+    }
+
+    .btn-delete {
+      background: transparent;
+      color: var(--red);
+      border: 2px solid var(--red);
+    }
+
+    .btn-delete:hover {
+      background: var(--red);
+      color: white;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      color: var(--text-muted);
+      border: 2px solid var(--border);
+    }
+
+    .btn-cancel:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    /* ── BACKUP PANEL ── */
+    .backup-panel {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 24px;
+      max-width: 640px;
+      margin-top: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .backup-panel h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 12px;
+    }
+
+    .backup-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn-export {
+      background: var(--ac);
+      color: white;
+    }
+
+    .btn-export:hover {
+      background: var(--ac-dark);
+    }
+
+    .btn-import {
+      background: var(--green);
+      color: white;
+    }
+
+    .btn-import:hover {
+      background: #047857;
+    }
+
+    .backup-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--text);
+      color: white;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      z-index: 999;
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+      font-family: inherit;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.green {
+      background: var(--green);
+    }
+
+    .toast.red {
+      background: var(--red);
+    }
+
+    /* card edit/delete buttons */
+    .drink-card .card-actions {
+      display: flex;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .card-actions .ca-btn {
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      min-height: 32px;
+    }
+
+    .ca-btn.edit {
+      background: var(--ac-light);
+      color: var(--ac);
+    }
+
+    .ca-btn.edit:hover {
+      background: var(--ac);
+      color: white;
+    }
+
+    .ca-btn.del {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .ca-btn.del:hover {
+      background: var(--red);
+      color: white;
+    }
+
+    /* ── TIMER ── */
+    .timer-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .timer-bar-bg {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .timer-bar {
+      height: 100%;
+      background: var(--ac);
+      border-radius: 4px;
+      transition: width 1s linear, background 0.3s;
+      width: 100%;
+    }
+
+    .timer-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      min-width: 28px;
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      transition: color 0.3s;
+    }
+
+    /* ── TYPE TOGGLE ── */
+    .type-toggle {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+    }
+
+    .type-toggle::-webkit-scrollbar {
+      display: none;
+    }
+
+    .type-btn {
+      padding: 5px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.16s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .type-btn.active {
+      background: var(--text);
+      color: white;
+      border-color: var(--text);
+    }
+
+    .type-btn:hover:not(.active) {
+      border-color: var(--ac);
+      color: var(--ac);
+    }
+
+    /* ═══ ASSESS TAB ═══ */
+    .assess-wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .assess-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 24px; }
+    .assess-header { display: flex; align-items: center; gap: 12px; padding: 16px 24px; }
+    .assess-header .ah-icon { font-size: 1.5rem; }
+    .assess-header .ah-title { font-weight: 800; font-size: 1rem; }
+    .assess-header .ah-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .assess-back-btn { margin-left: auto; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 4px 12px; font-size: 0.75rem; cursor: pointer; color: var(--text-muted); font-family: inherit; }
+    .assess-back-btn:hover { border-color: var(--ac); color: var(--ac); }
+    .assess-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .assess-cluster-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .assess-cluster-btn { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.72rem; cursor: pointer; font-family: inherit; transition: all .18s; }
+    .assess-cluster-btn.active { border-width: 2px; }
+    .assess-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .assess-sub-btn { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: transparent; cursor: pointer; text-align: left; font-family: inherit; transition: all .18s; }
+    .assess-sub-btn.active { border: 2px solid var(--ac); background: rgba(37,99,235,.08); }
+    .assess-sub-btn .sub-name { font-weight: 600; font-size: 0.72rem; }
+    .assess-sub-btn.active .sub-name { color: var(--ac); }
+    .assess-sub-btn .sub-badges { display: flex; gap: 4px; margin-top: 3px; }
+    .assess-sub-btn .sub-badges span { font-size: 0.58rem; padding: 1px 5px; border-radius: 4px; font-weight: 600; }
+    .assess-info-box { background: var(--bg); border-radius: 10px; padding: 12px; margin-top: 12px; }
+    .assess-info-box .info-name { font-weight: 700; font-size: 0.85rem; }
+    .assess-info-box .info-detail { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+    .assess-info-box .info-counts { display: flex; gap: 8px; margin-top: 8px; font-size: 0.72rem; }
+    .assess-start-btn { width: 100%; padding: 12px 20px; border-radius: 12px; border: none; background: var(--ac); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: inherit; margin-top: 16px; transition: all .18s; }
+    .assess-start-btn:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+    .assess-start-btn:not(:disabled):hover { background: var(--ac-dark); transform: translateY(-1px); }
+    .quiz-progress { height: 4px; background: var(--border); border-radius: 99px; margin-bottom: 20px; overflow: hidden; }
+    .quiz-progress-fill { height: 100%; background: var(--ac); transition: width .3s; border-radius: 99px; }
+    .quiz-question { font-weight: 600; font-size: 0.9rem; margin-bottom: 16px; line-height: 1.5; }
+    .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-opt { padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); background: transparent; text-align: left; cursor: pointer; font-weight: 400; font-size: 0.85rem; font-family: inherit; transition: all .15s; }
+    .quiz-opt:hover { border-color: var(--ac); background: var(--ac-light); }
+    .quiz-opt.selected { border: 2px solid var(--ac); background: rgba(37,99,235,.08); font-weight: 700; color: var(--ac); }
+    .quiz-opt .opt-letter { font-weight: 700; margin-right: 8px; color: var(--text-muted); }
+    .quiz-next-btn { margin-top: 16px; width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--ac); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: inherit; }
+    .quiz-next-btn:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+    .check-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all .15s; margin-bottom: 8px; }
+    .check-item.checked { border: 2px solid var(--green); background: rgba(5,150,105,.06); }
+    .check-box { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.75rem; font-weight: 700; color: #fff; }
+    .check-item.checked .check-box { background: var(--green); border-color: var(--green); }
+    .check-text { font-size: 0.85rem; }
+    .check-item.checked .check-text { font-weight: 600; color: var(--green); }
+    .result-level-box { border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 16px; }
+    .result-level-box .rl-emoji { font-size: 2rem; margin-bottom: 4px; }
+    .result-level-box .rl-label { font-size: 1.1rem; font-weight: 800; }
+    .result-level-box .rl-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+    .result-bar-wrap { margin-bottom: 10px; }
+    .result-bar-wrap .rb-header { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 4px; }
+    .result-bar-wrap .rb-header .rb-label { font-weight: 600; }
+    .result-bar-wrap .rb-header .rb-val { font-weight: 700; }
+    .result-bar { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .result-bar-fill { height: 100%; border-radius: 99px; transition: width .5s; }
+    .assess-save-btn { flex: 2; padding: 12px; border-radius: 12px; border: none; background: var(--green); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: inherit; }
+    .assess-save-btn:hover { opacity: .9; }
+    .assess-cancel-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--text); font-weight: 600; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+    @media (max-width: 600px) {
+      .assess-sub-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ════════════ HEADER ════════════ -->
+  <header>
+    <div class="logo">ORIGAMI <span>Drink Training</span></div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="browse" onclick="switchMode('browse')"><span data-i18n="tab_browse">📖
+          Học</span></button>
+      <button class="mode-tab" data-mode="train" onclick="switchMode('train')"><span data-i18n="tab_train">🎯 Luyện
+          tập</span></button>
+      <button class="mode-tab" data-mode="assess" onclick="switchMode('assess')">🏅 Đánh giá</button>
+      <button class="mode-tab" data-mode="add" onclick="switchMode('add')"><span data-i18n="tab_add">✏️ Nhập công
+          thức</span></button>
+      <button class="mode-tab" data-mode="history" onclick="switchMode('history')"><span data-i18n="tab_history">📊 Lịch
+          sử</span></button>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button class="lang-toggle" onclick="toggleLang()" id="lang-btn" title="Chuyển ngôn ngữ">🇻🇳</button>
+      <button class="nick-badge" onclick="openNickModal()" title="Đổi tên">
+        🧑‍🍳 <span id="nick-display">...</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Nickname Modal -->
+  <div class="nick-overlay" id="nick-overlay" onclick="closeNickModalIfOutside(event)">
+    <div class="nick-modal">
+      <h3 data-i18n="nick_title">👤 Bạn là ai?</h3>
+      <p data-i18n="nick_desc">Nhập nickname để lưu tiến độ riêng của bạn</p>
+      <input class="nick-input" id="nick-input" type="text" maxlength="30" data-i18n-placeholder="nick_placeholder"
+        placeholder="Nickname của bạn..." onkeydown="if(event.key==='Enter') confirmNick()">
+      <button class="nick-confirm" onclick="confirmNick()" data-i18n="nick_confirm">✔️ Xác nhận</button>
+      <div class="nick-players-hint" id="nick-players-hint"></div>
+    </div>
+  </div>
+
+  <!-- Edit Card Modal -->
+  <div class="edit-card-overlay" id="edit-card-overlay" onclick="if(event.target===this)closeEditCard()">
+    <div class="edit-card-modal">
+      <h3>✏️ <span id="edit-card-title"></span></h3>
+      <input type="hidden" id="edit-card-name">
+      <label>Mô tả (tiếng Việt)</label>
+      <input type="text" id="edit-card-desc" placeholder="Mô tả...">
+      <label>Nguyên liệu / Bước thực hiện</label>
+      <div class="ing-form-list" id="edit-ing-list"></div>
+      <button type="button" class="add-ing-btn" onclick="addEditIngRow()" style="margin-top:6px;padding:6px 14px;border-radius:8px;background:var(--ac-light);color:var(--ac);border:none;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;">+ Thêm dòng</button>
+      <label>Ly / Dụng cụ</label>
+      <input type="text" id="edit-card-glass" placeholder="Ví dụ: Ly cao, Dĩa sushi...">
+      <label>Ghi chú</label>
+      <input type="text" id="edit-card-note" placeholder="Ghi chú...">
+      <div class="edit-actions">
+        <button class="btn-cancel" onclick="closeEditCard()">Hủy</button>
+        <button class="btn-reset" onclick="resetCardEdit()" title="Xóa chỉnh sửa, về mặc định">↩ Reset</button>
+        <button class="btn-save" onclick="saveCardEdit()">💾 Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ MAIN ════════════ -->
+  <main>
+
+    <!-- ══ BROWSE MODE ══ -->
+    <div id="browse-mode">
+      <div
+        style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+        <div class="section-title" id="browse-section-title" style="margin-bottom:0;" data-i18n="browse_title">Tất cả
+          nội dung</div>
+        <div class="type-toggle">
+          <button class="type-btn active" data-type="all" onclick="filterBrowseType('all',this)" data-i18n="type_all">📚
+            Tất cả</button>
+          <button class="type-btn" data-type="drink" onclick="filterBrowseType('drink',this)" data-i18n="type_drink">🍹
+            Đồ uống</button>
+          <button class="type-btn" data-type="food" onclick="filterBrowseType('food',this)" data-i18n="type_food">🍽️ Đồ
+            ăn</button>
+          <button class="type-btn" data-type="sushi" onclick="filterBrowseType('sushi',this)" data-i18n="type_sushi">🍣
+            Sushi</button>
+          <button class="type-btn" data-type="hotkitchen" onclick="filterBrowseType('hotkitchen',this)"
+            data-i18n="type_hotkitchen">🔥 Bếp nóng</button>
+          <button class="type-btn" data-type="service" onclick="filterBrowseType('service',this)"
+            data-i18n="type_service">🍽️ Phục vụ</button>
+          <button class="type-btn" data-type="wirtschaft" onclick="filterBrowseType('wirtschaft',this)"
+            data-i18n="type_wirtschaft">💰 Kinh tế</button>
+          <button class="type-btn" data-type="operations" onclick="filterBrowseType('operations',this)"
+            data-i18n="type_operations">🔧 Vận hành</button>
+          <button class="type-btn" data-type="fachkompetenz" onclick="filterBrowseType('fachkompetenz',this)"
+            data-i18n="type_fachkompetenz">🍸 Chuyên môn</button>
+          <button class="type-btn" data-type="compliance" onclick="filterBrowseType('compliance',this)"
+            data-i18n="type_compliance">⚖️ Tuân thủ</button>
+          <button class="type-btn" data-type="sales" onclick="filterBrowseType('sales',this)" data-i18n="type_sales">📢
+            Bán hàng</button>
+          <button class="type-btn" data-type="softskills" onclick="filterBrowseType('softskills',this)"
+            data-i18n="type_softskills">🌐 Kỹ năng mềm</button>
+        </div>
+      </div>
+
+      <div class="search-wrap" id="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" data-i18n-placeholder="search_placeholder"
+          placeholder="Tìm tên, danh mục hoặc nội dung..." oninput="onSearch(this)">
+        <button class="clear-btn" onclick="clearSearch()">✕</button>
+      </div>
+
+      <div class="cat-filter" id="cat-filter">
+        <button class="cat-btn active" data-cat="all" onclick="filterBrowse('all', this)" data-i18n="cat_all">Tất
+          cả</button>
+      </div>
+
+      <div class="drink-grid" id="drink-grid"></div>
+    </div>
+
+    <!-- ══ ADD / EDIT MODE ══ -->
+    <div id="add-mode">
+      <div class="section-title" id="add-mode-title" data-i18n="add_title">Nhập công thức</div>
+      <div class="form-card fade-in">
+
+        <div class="form-row">
+          <label data-i18n="form_type">Loại mục</label>
+          <div class="type-toggle">
+            <button type="button" class="type-btn active" id="form-type-drink" onclick="setFormType('drink')"
+              data-i18n="type_drink">🍹 Đồ uống</button>
+            <button type="button" class="type-btn" id="form-type-food" onclick="setFormType('food')"
+              data-i18n="type_food">🍽️ Đồ ăn</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_name">Tên món <span class="required">*</span></label>
+          <select id="f-name" class="form-input" onchange="autoFillFromName()">
+            <option value="" data-i18n="form_name_ph">— Chọn món cần nhập —</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_cat">Danh mục <span class="required">*</span></label>
+          <select id="f-cat" class="form-input" onchange="handleCatChange()">
+            <option value="" data-i18n="form_cat_ph">— Chọn nhóm —</option>
+          </select>
+          <input id="f-cat-custom" class="form-input" type="text" data-i18n-placeholder="form_cat_custom"
+            placeholder="Nhập tên nhóm mới..." style="margin-top:6px;display:none;">
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_desc">Mô tả ngắn</label>
+          <input id="f-desc" class="form-input" type="text" data-i18n-placeholder="form_desc_ph"
+            placeholder="VD: Cocktail xoài chua ngọt">
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_ing">Nguyên liệu <span class="required">*</span></label>
+          <div class="ing-form-list" id="f-ing-list"></div>
+          <button class="add-ing-btn" onclick="addFormIngRow()" data-i18n="form_add_ing">+ Thêm nguyên liệu</button>
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_glass">Loại ly / dụng cụ</label>
+          <select id="f-glass" class="form-input" onchange="handleGlassChange()">
+            <option value="" data-i18n="form_glass_ph">— Chọn loại ly —</option>
+            <option>Ly cao (Highball)</option>
+            <option>Ly thấp (Rocks)</option>
+            <option>Ly Wine</option>
+            <option>Ly Wine lớn (250ml)</option>
+            <option>Ly Champagne (Flute)</option>
+            <option>Ly bia / Ly Pilsner</option>
+            <option>Ly Weizen cao</option>
+            <option>Ly Balloon / Ly Highball</option>
+            <option>Ly đồng (Copper Mug)</option>
+            <option>Ly nước</option>
+            <option>Tách cà phê</option>
+            <option>Demitasse (tách nhỏ)</option>
+            <option>Tách Cappuccino 180ml</option>
+            <option>Tách Espresso lớn</option>
+            <option>Ấm trà + tách</option>
+            <option>Chén sake (Ochoko)</option>
+            <option value="__other__" data-i18n="form_glass_other">Khác (nhập tay)...</option>
+          </select>
+          <input id="f-glass-other" class="form-input" type="text" data-i18n-placeholder="form_glass_other_ph"
+            placeholder="Nhập loại ly..." style="margin-top:6px;display:none;">
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_note">Ghi chú / cách pha</label>
+          <textarea id="f-note" class="form-input" rows="3" data-i18n-placeholder="form_note_ph"
+            placeholder="VD: Tỉ lệ 1:3, thêm đá, trang trí bạc hà..." style="resize:vertical;"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-save" onclick="saveDrink()" data-i18n="form_save">💾 Lưu công thức</button>
+          <button class="btn btn-delete" id="f-delete-btn" style="display:none;" onclick="deleteEditingDrink()"
+            data-i18n="form_delete">🗑 Xoá</button>
+          <button class="btn btn-cancel" onclick="cancelEdit()" data-i18n="form_cancel">✕ Huỷ</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ TRAIN MODE ══ -->
+    <div id="train-mode">
+
+      <!-- Settings -->
+      <div class="train-settings" id="train-settings">
+        <div class="train-settings-title" data-i18n="train_title">Chọn loại & nhóm luyện tập</div>
+        <div class="type-toggle" id="train-type-toggle" style="margin-bottom:8px;">
+          <button class="type-btn active" data-type="all" onclick="setTrainType('all',this)"
+            data-i18n="type_all">📚 Tất cả</button>
+          <button class="type-btn" data-type="drink" onclick="setTrainType('drink',this)"
+            data-i18n="type_drink">🍹 Đồ uống</button>
+          <button class="type-btn" data-type="food" onclick="setTrainType('food',this)"
+            data-i18n="type_food">🍽️ Đồ ăn</button>
+          <button class="type-btn" data-type="sushi" onclick="setTrainType('sushi',this)">🍣 Sushi</button>
+          <button class="type-btn" data-type="hotkitchen" onclick="setTrainType('hotkitchen',this)">🔥 Hot
+            Kitchen</button>
+          <button class="type-btn" data-type="service" onclick="setTrainType('service',this)">🍽️ Service</button>
+          <button class="type-btn" data-type="wirtschaft" onclick="setTrainType('wirtschaft',this)">💰 Kinh tế</button>
+          <button class="type-btn" data-type="operations" onclick="setTrainType('operations',this)">🔧
+            Operations</button>
+          <button class="type-btn" data-type="fachkompetenz" onclick="setTrainType('fachkompetenz',this)">🍸
+            Fachkompetenz</button>
+          <button class="type-btn" data-type="compliance" onclick="setTrainType('compliance',this)">⚖️
+            Compliance</button>
+          <button class="type-btn" data-type="sales" onclick="setTrainType('sales',this)">📢 Sales</button>
+          <button class="type-btn" data-type="softskills" onclick="setTrainType('softskills',this)">🌐 Soft
+            Skills</button>
+        </div>
+        <div id="cat-checks" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        <div class="bottom-row">
+          <label class="weak-toggle" id="weak-toggle">
+            <input type="checkbox" id="weak-only">
+            <span data-i18n="train_weak_only">⚡ Chỉ luyện món chưa thuộc</span>
+          </label>
+          <span id="weak-count" style="font-size:0.8rem;color:var(--text-muted);"></span>
+          <button class="btn-start" onclick="startTraining()" data-i18n="train_start">▶ Bắt đầu luyện tập</button>
+        </div>
+      </div>
+
+      <!-- Stats + Progress -->
+      <div id="train-game" style="display:none;">
+        <div class="train-header">
+          <div class="train-stats">
+            <div class="stat-box">
+              <div class="label" data-i18n="stat_current">Câu</div>
+              <div class="value" id="stat-current">1</div>
+            </div>
+            <div class="stat-box">
+              <div class="label" data-i18n="stat_total">Tổng</div>
+              <div class="value" id="stat-total">—</div>
+            </div>
+            <div class="stat-box correct">
+              <div class="label" data-i18n="stat_correct">Đúng</div>
+              <div class="value" id="stat-correct">0</div>
+            </div>
+            <div class="stat-box" style="border-left-color:var(--red);">
+              <div class="label" data-i18n="stat_wrong">Sai</div>
+              <div class="value" id="stat-wrong" style="color:var(--red);">0</div>
+            </div>
+          </div>
+          <button class="btn btn-reset" onclick="resetTraining()" data-i18n="train_end">✕ Kết thúc</button>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-wrap">
+          <div class="timer-bar-bg">
+            <div id="timer-bar" class="timer-bar" style="width:100%"></div>
+          </div>
+          <span id="timer-display" class="timer-label">30s</span>
+        </div>
+
+        <!-- Flashcard -->
+        <div class="flashcard-container">
+          <div class="flashcard fade-in" id="flashcard">
+            <div class="drink-number" id="fc-number">1 / 10</div>
+            <div class="drink-category-label" id="fc-category">—</div>
+            <div class="drink-name" id="fc-name">—</div>
+            <div class="drink-desc" id="fc-desc">—</div>
+          </div>
+        </div>
+
+        <!-- Chip Selection Area -->
+        <div class="input-area fade-in">
+          <p class="chip-instruction"><span data-i18n="chip_instruction">Chọn</span> <strong id="chip-count">?</strong>
+            <span data-i18n="chip_instruction2">nguyên liệu đúng cho món này</span></p>
+          <div class="chip-pool" id="chip-pool"></div>
+
+          <div class="action-buttons">
+            <button class="btn btn-check" onclick="checkAnswer()" data-i18n="btn_check">✓ Kiểm tra</button>
+            <button class="btn btn-reveal" onclick="revealAnswer()" data-i18n="btn_reveal">👁 Xem đáp án</button>
+            <button class="btn btn-next" onclick="nextDrink()" data-i18n="btn_next">Tiếp theo →</button>
+          </div>
+
+          <div class="result-panel" id="result-panel"></div>
+        </div>
+
+      </div>
+
+      <!-- Done screen -->
+      <div class="done-screen" id="done-screen">
+        <div class="done-emoji">🎉</div>
+        <h2 data-i18n="done_heading">Hoàn thành!</h2>
+        <div class="final-score" id="final-score">0 / 0</div>
+        <div class="score-level-wrap" id="score-stars"></div>
+        <div id="score-level-badge"></div>
+        <p id="final-msg" data-i18n="done_msg">Hãy luyện tập thêm nhé!</p>
+        <div class="wrong-breakdown" id="wrong-breakdown"></div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-reveal" id="retry-wrong-btn" style="display:none;" onclick="retryWrongDrinks()"
+            data-i18n="done_retry">🔁 Ôn lại lỗi sai</button>
+          <button class="btn btn-check btn-restart" onclick="resetTraining()" data-i18n="done_restart">🔄 Luyện
+            tiếp</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ HISTORY MODE ══ -->
+    <div id="history-mode">
+      <div class="section-title" data-i18n="history_title">📊 Lịch sử luyện tập</div>
+      <div id="history-content"></div>
+    </div>
+
+    <!-- ══ ASSESS MODE ══ -->
+    <div id="assess-mode" style="display:none;">
+      <div id="assess-root"></div>
+    </div>
+
+  </main>
+
+  <script>
     /* ═══════════════════════════════════════════════
        i18n — Language System (vi / de)
     ═══════════════════════════════════════════════ */
@@ -7,7 +2912,6 @@
       // Tabs
       tab_browse: { vi: '📖 Học', de: '📖 Lernen' },
       tab_train: { vi: '🎯 Luyện tập', de: '🎯 Üben' },
-      tab_assess: { vi: '🏅 Đánh giá', de: '🏅 Bewertung' },
       tab_add: { vi: '✏️ Nhập công thức', de: '✏️ Rezept eingeben' },
       tab_history: { vi: '📊 Lịch sử', de: '📊 Verlauf' },
       // Nickname
@@ -596,11 +3500,6 @@
       if (titleEl && typeof browseType !== 'undefined') {
         const titleKey = 'title_' + browseType;
         titleEl.textContent = T(titleKey);
-      }
-      // Re-render assess tab if visible
-      if (typeof buildAssess === 'function') {
-        const assessEl = document.getElementById('assess-mode');
-        if (assessEl && assessEl.style.display !== 'none') buildAssess();
       }
     }
 
@@ -3665,470 +6564,6 @@
       if (mode === 'assess') buildAssess();
     }
 
-    /* ═══════════════════ QUIZ DATA ═══════════════════ */
-    const QUIZ = {
-      // 🍣 Sushi & Bếp lạnh
-      mise_en_place_cold: [
-        { q: { de: "Nori-Blätter werden feucht – was tust du?", vn: "Rong biển bị ẩm – bạn làm gì?" }, opts: { de: ["Sofort wegwerfen", "In Alufolie bei Raumtemperatur lagern", "In luftdichter Box mit Silica-Trockenmittel lagern", "Im Kühlschrank nass lagern"], vn: ["Vứt đi ngay", "Bọc giấy nhôm để nhiệt độ phòng", "Hộp kín với túi hút ẩm Silica", "Để tủ lạnh ướt"] }, ans: 2 },
-        { q: { de: "Wie lange vor Service soll die Station komplett eingerichtet sein?", vn: "Trước giờ phục vụ bao lâu cần setup xong trạm?" }, opts: { de: ["5 Minuten", "15–30 Minuten", "1 Stunde", "Wenn der erste Gast kommt"], vn: ["5 phút", "15–30 phút", "1 tiếng", "Khi khách đầu tiên đến"] }, ans: 1 },
-        { q: { de: "Was gehört NICHT zur Mise en Place der Kaltküche?", vn: "Cái nào KHÔNG thuộc mise en place bếp lạnh?" }, opts: { de: ["Sushi-Reis vorbereiten", "Wok anheizen", "Nori-Blätter bereitstellen", "Avocado schneiden"], vn: ["Chuẩn bị cơm sushi", "Làm nóng chảo wok", "Chuẩn bị rong biển Nori", "Cắt bơ"] }, ans: 1 },
-        { q: { de: "Avocado wird braun – wie verhinderst du das?", vn: "Bơ bị thâm – cách phòng tránh?" }, opts: { de: ["Mit Zitronensaft beträufeln und abdecken", "Im warmen Wasser lagern", "Einfrieren", "Mit Mayonnaise bestreichen"], vn: ["Nhỏ nước chanh và bọc kín", "Ngâm nước ấm", "Đông đá", "Phết mayonnaise"] }, ans: 0 }
-      ],
-      sushi_reis: [
-        { q: { de: "Welche Temperatur sollte Sushi-Reis beim Formen haben?", vn: "Cơm sushi nên ở nhiệt độ bao nhiêu khi nắm?" }, opts: { de: ["Heiß direkt vom Herd (~90°C)", "Körpertemperatur (~37°C)", "Zimmertemperatur (~22°C)", "Gekühlt (~10°C)"], vn: ["Nóng ngay từ nồi (~90°C)", "Nhiệt độ cơ thể (~37°C)", "Nhiệt độ phòng (~22°C)", "Lạnh (~10°C)"] }, ans: 1 },
-        { q: { de: "Was bewirkt der Reisessig im Sushi-Reis?", vn: "Giấm gạo trong cơm sushi có tác dụng gì?" }, opts: { de: ["Nur Geschmack", "Konservierung, Glanz und Bindung", "Macht den Reis weicher", "Verhindert Kleben an der Matte"], vn: ["Chỉ tạo vị", "Bảo quản, tạo bóng và kết dính", "Làm cơm mềm hơn", "Chống dính mành cuốn"] }, ans: 1 },
-        { q: { de: "Wie lange ruht Sushi-Reis nach dem Kochen vor dem Würzen?", vn: "Cơm sau khi nấu cần nghỉ bao lâu trước khi trộn giấm?" }, opts: { de: ["Gar nicht – sofort würzen", "5 Minuten", "10–15 Minuten abdampfen lassen", "1 Stunde abkühlen"], vn: ["Không cần – trộn ngay", "5 phút", "Để thoát hơi 10–15 phút", "Để nguội 1 tiếng"] }, ans: 2 },
-        { q: { de: "Warum fächert man Sushi-Reis?", vn: "Tại sao phải quạt cơm sushi?" }, opts: { de: ["Für den Geschmack", "Um schnell auf Körpertemperatur abzukühlen & Glanz zu erzeugen", "Um Feuchtigkeit hinzuzufügen", "Tradition ohne Funktion"], vn: ["Để tạo vị", "Làm nguội nhanh đến nhiệt độ cơ thể & tạo bóng", "Để thêm độ ẩm", "Truyền thống không có tác dụng"] }, ans: 1 }
-      ],
-      nigiri_maki_basics: [
-        { q: { de: "Wie viel Gramm Reis verwendet man typischerweise für ein Nigiri?", vn: "Một miếng Nigiri thường dùng bao nhiêu gram cơm?" }, opts: { de: ["10–15g", "18–22g", "30–35g", "40–50g"], vn: ["10–15g", "18–22g", "30–35g", "40–50g"] }, ans: 1 },
-        { q: { de: "Hosomaki hat wie viele Nori-Blatt Breiten?", vn: "Hosomaki dùng bao nhiêu chiều rộng rong biển?" }, opts: { de: ["Ganze Nori", "Halbe Nori", "Viertel Nori", "Zwei Nori überlappt"], vn: ["Cả tờ Nori", "Nửa tờ Nori", "Một phần tư tờ", "Hai tờ chồng nhau"] }, ans: 1 },
-        { q: { de: "Maki wird nach dem Rollen sofort geschnitten – richtig?", vn: "Maki cuốn xong cắt ngay – đúng không?" }, opts: { de: ["Ja, immer sofort", "Nein, 30 Sekunden ruhen lassen damit die Nori haftet", "Nein, erst nach 5 Minuten im Kühlschrank", "Egal, wann man schneidet"], vn: ["Đúng, luôn cắt ngay", "Không, để 30 giây cho Nori dính", "Không, phải vào tủ lạnh 5 phút trước", "Không quan trọng"] }, ans: 1 },
-        { q: { de: "Was verhindert, dass Gunkan-Nori sich aufrollt?", vn: "Cái gì giúp Nori Gunkan không bị bung?" }, opts: { de: ["Viel Wasabi als Kleber", "Einen Reiskorn als Kleber an den Naht drücken", "Sofort in den Kühlschrank stellen", "Nichts, es löst sich immer"], vn: ["Nhiều Wasabi làm keo", "Một hạt cơm làm keo ở mép nối", "Cho vào tủ lạnh ngay", "Không có gì, lúc nào cũng bung"] }, ans: 1 }
-      ],
-      creative_rolls: [
-        { q: { de: "Ein Inside-Out Roll (Uramaki) hat Reis außen – wie verhindert man Kleben?", vn: "Inside-Out roll có cơm ở ngoài – cách chống dính?" }, opts: { de: ["Reis mit Öl einreiben", "Plastikfolie auf der Bambusmatte", "Nori mit Wasser befeuchten", "Dünne Fettschicht auf dem Reis"], vn: ["Thoa dầu vào cơm", "Bọc nilon lên mành tre", "Làm ẩm Nori bằng nước", "Một lớp mỏng chất béo lên cơm"] }, ans: 1 },
-        { q: { de: "Dragon Roll: Welcher Belag wird aufgefächert oben drauf gelegt?", vn: "Dragon Roll: Topping nào được đắp lên theo kiểu xếp vảy?" }, opts: { de: ["Thunfisch", "Lachs", "Avocado", "Gurke"], vn: ["Cá ngừ", "Cá hồi", "Bơ", "Dưa chuột"] }, ans: 2 },
-        { q: { de: "Crunchy Roll: Was macht den knusprigen Effekt?", vn: "Crunchy Roll: Cái gì tạo độ giòn?" }, opts: { de: ["Gebratener Reis oben", "Panko-Brösel oder Tempura-Flakes", "Cracker-Stück innen", "Frittierter Nori"], vn: ["Cơm chiên bên trên", "Vụn Panko hoặc Tempura Flakes", "Bánh cracker bên trong", "Nori chiên giòn"] }, ans: 1 },
-        { q: { de: "Rainbow Roll hat bunt belegte Scheiben – in welcher Reihenfolge legt man sie?", vn: "Rainbow Roll có nhiều màu cá – sắp xếp theo thứ tự nào?" }, opts: { de: ["Zufällig", "Nach Gewicht", "Farblich abwechselnd für visuellen Effekt", "Alphabetisch nach Namen"], vn: ["Ngẫu nhiên", "Theo trọng lượng", "Xen kẽ màu sắc cho hiệu ứng thị giác", "Theo bảng chữ cái"] }, ans: 2 }
-      ],
-      fish_knowledge: [
-        { q: { de: "Wie erkennt man frischen Lachs?", vn: "Nhận biết cá hồi tươi như thế nào?" }, opts: { de: ["Starker Fischgeruch, weiches Fleisch", "Neutraler Geruch, festes elastisches Fleisch, leuchtend orange", "Brauner Rand, leicht schleimig", "Meeresgeruch, blass"], vn: ["Mùi cá nồng, thịt mềm", "Mùi trung tính, thịt chắc đàn hồi, màu cam tươi", "Viền nâu, hơi nhớt", "Mùi biển, màu nhạt"] }, ans: 1 },
-        { q: { de: "Sushi-Fisch muss vor Verwendung eingefroren worden sein – warum?", vn: "Cá làm sushi phải được đông đá trước – tại sao?" }, opts: { de: ["Für besseren Geschmack", "Zur Abtötung von Parasiten (z.B. Anisakis)", "Um die Farbe zu verbessern", "Gesetzlich nicht vorgeschrieben"], vn: ["Vì vị ngon hơn", "Để tiêu diệt ký sinh trùng (ví dụ Anisakis)", "Để cải thiện màu sắc", "Luật không yêu cầu"] }, ans: 1 },
-        { q: { de: "Bei welcher Temperatur lagert man Sushi-Fisch?", vn: "Cá sushi được bảo quản ở nhiệt độ bao nhiêu?" }, opts: { de: ["0–2°C", "4–7°C", "10–12°C", "-18°C immer"], vn: ["0–2°C", "4–7°C", "10–12°C", "-18°C luôn luôn"] }, ans: 0 },
-        { q: { de: "Hamachi ist was für ein Fisch?", vn: "Hamachi là loại cá gì?" }, opts: { de: ["Lachs (Nordsee)", "Japanische Gelbschwanzmakrele", "Roter Thunfisch", "Dorade"], vn: ["Cá hồi (Bắc Hải)", "Cá đuôi vàng Nhật Bản", "Cá ngừ đỏ", "Cá tráp"] }, ans: 1 }
-      ],
-      // 🔥 Hot Kitchen
-      asiat_zutaten_prep: [
-        { q: { de: "Wie schneidet man Ingwer am besten für Saucen?", vn: "Gừng nên thái như thế nào để làm sốt?" }, opts: { de: ["Grob hacken", "Fein reiben oder sehr fein würfeln", "In dicke Scheiben", "Ganz lassen"], vn: ["Băm thô", "Mài nhuyễn hoặc thái hạt lựu rất nhỏ", "Thái lát dày", "Để nguyên"] }, ans: 1 },
-        { q: { de: "Zitronengras: Welcher Teil wird verwendet?", vn: "Sả: Phần nào được sử dụng?" }, opts: { de: ["Das grüne obere Ende", "Der weiße untere Teil (10cm vom Boden)", "Die Wurzel", "Alle Teile gleich"], vn: ["Phần lá xanh trên", "Phần trắng dưới (10cm từ gốc)", "Rễ cây", "Tất cả đều như nhau"] }, ans: 1 },
-        { q: { de: "Wann gibt man Thai-Basilikum zu einem Curry?", vn: "Cho húng quế Thái vào cà ri khi nào?" }, opts: { de: ["Zu Beginn des Kochens", "In der Mitte", "Ganz am Ende (Abschalten der Hitze)", "Beim Servieren auf dem Teller"], vn: ["Từ đầu khi nấu", "Ở giữa", "Cuối cùng (tắt lửa)", "Khi dọn ra đĩa"] }, ans: 2 },
-        { q: { de: "Frische Kokosmilch trennt sich – was tun?", vn: "Cốt dừa tươi bị tách lớp – xử lý thế nào?" }, opts: { de: ["Wegwerfen", "Gut schütteln oder umrühren", "Aufkochen bis alles schmilzt", "Nur die flüssige Schicht verwenden"], vn: ["Bỏ đi", "Lắc đều hoặc khuấy", "Đun sôi cho tan hết", "Chỉ dùng lớp lỏng"] }, ans: 1 }
-      ],
-      haccp_hot_kitchen: [
-        { q: { de: "Welche Kerntemperatur muss Hähnchenfleisch mindestens erreichen?", vn: "Thịt gà phải đạt nhiệt độ lõi tối thiểu bao nhiêu?" }, opts: { de: ["60°C", "72°C", "80°C", "90°C"], vn: ["60°C", "72°C", "80°C", "90°C"] }, ans: 1 },
-        { q: { de: "Farbkodierte Bretter: Welche Farbe für rohes Fleisch?", vn: "Thớt phân màu: Màu nào dành cho thịt sống?" }, opts: { de: ["Grün", "Gelb", "Rot", "Blau"], vn: ["Xanh lá", "Vàng", "Đỏ", "Xanh dương"] }, ans: 2 },
-        { q: { de: "Was ist Kreuzkontamination?", vn: "Lây nhiễm chéo là gì?" }, opts: { de: ["Zwei Gäste bestellen dasselbe", "Übertragung von Keimen zwischen rohen und fertigen Speisen", "Falsche Portionsgröße", "Zu heiß servieren"], vn: ["Hai khách order cùng món", "Vi khuẩn lây từ thực phẩm sống sang thực phẩm chín", "Sai định lượng", "Phục vụ quá nóng"] }, ans: 1 },
-        { q: { de: "Gekochter Reis darf wie lange bei Raumtemperatur stehen?", vn: "Cơm đã nấu được để nhiệt độ phòng tối đa bao lâu?" }, opts: { de: ["Unbegrenzt", "30 Minuten", "2 Stunden", "8 Stunden"], vn: ["Không giới hạn", "30 phút", "2 tiếng", "8 tiếng"] }, ans: 2 }
-      ],
-      // ⚙️ Operations
-      mise_en_place: [
-        { q: { de: "Zitrusfrüchte für Garnitur: Wann schneidet man sie vor?", vn: "Trái cây trang trí: Cắt sẵn khi nào?" }, opts: { de: ["Tage vorher einfrieren", "Maximal 2–3 Stunden vor Service", "Am Vortag abends", "Erst wenn bestellt"], vn: ["Đông đá nhiều ngày trước", "Tối đa 2–3 tiếng trước ca", "Tối hôm trước", "Khi nào mới gọi mới cắt"] }, ans: 1 },
-        { q: { de: "Was prüft man als erstes beim Bar-Setup?", vn: "Kiểm tra cái gì đầu tiên khi setup quầy bar?" }, opts: { de: ["Social-Media-Posts", "Sauberkeit, Vollständigkeit der Grundausstattung, Eisvorrat", "Musik-Playlist", "Kassensystem"], vn: ["Bài đăng mạng xã hội", "Vệ sinh, đầy đủ trang thiết bị cơ bản, trữ lượng đá", "Playlist nhạc", "Phần mềm tính tiền"] }, ans: 1 },
-        { q: { de: "Sirup-Flasche ist leer – wann auffüllen?", vn: "Chai siro hết – nên châm khi nào?" }, opts: { de: ["Erst wenn ein Gast bestellt", "Während des Service wenn es ruhiger wird", "Immer vor Schichtbeginn prüfen und auffüllen", "Nie – Sirup ist unwichtig"], vn: ["Khi khách gọi mới châm", "Trong ca khi vắng khách", "Luôn kiểm tra và châm trước khi ca bắt đầu", "Không cần – siro ít quan trọng"] }, ans: 2 },
-        { q: { de: "Wofür steht 'Mise en Place'?", vn: "'Mise en Place' có nghĩa là gì?" }, opts: { de: ["Alles an seinem Platz vorbereiten", "Einen besonderen Cocktail mixen", "Kunden begrüßen", "Abrechnung durchführen"], vn: ["Chuẩn bị mọi thứ đúng chỗ", "Pha một cocktail đặc biệt", "Chào đón khách", "Thanh toán cuối ca"] }, ans: 0 }
-      ],
-      pos_bar: [
-        { q: { de: "Tisch A und B wollen getrennte Rechnungen – wie gehst du vor?", vn: "Bàn A và B muốn tách bill – bạn làm thế nào?" }, opts: { de: ["Nur eine Rechnung möglich", "Split-Funktion im POS nutzen", "Manuell auf Papier aufschreiben", "Den Manager rufen"], vn: ["Chỉ in một bill được", "Dùng chức năng Split trong POS", "Ghi tay ra giấy", "Gọi quản lý"] }, ans: 1 },
-        { q: { de: "Was tust du bei einem POS-Absturz während des Service?", vn: "POS bị treo giữa ca – xử lý thế nào?" }, opts: { de: ["Service stoppen", "Bestellungen manuell aufschreiben, Manager informieren, System neu starten", "Gäste wegschicken", "Ignorieren und weitermachen"], vn: ["Dừng phục vụ", "Ghi tay order, báo manager, khởi động lại hệ thống", "Xin lỗi và đuổi khách về", "Bỏ qua và tiếp tục"] }, ans: 1 },
-        { q: { de: "Tagesabschluss – was gehört dazu?", vn: "Kết ca ngày – công việc gồm những gì?" }, opts: { de: ["Nur Kasse zählen", "Kassensturz, Z-Report drucken, Differenzen notieren, Abgabe ans Management", "Nur aufräumen", "Nichts, läuft automatisch"], vn: ["Chỉ đếm tiền mặt", "Kiểm quỹ, in Z-Report, ghi sai lệch, báo cáo management", "Chỉ dọn dẹp", "Không làm gì, tự động"] }, ans: 1 },
-        { q: { de: "Wie korrigiert man einen falschen Artikel im POS?", vn: "Xóa món nhập sai trong POS bằng cách nào?" }, opts: { de: ["Komplett neu starten", "Void/Storno-Funktion nutzen, Grund eingeben", "Einfach ignorieren", "Neuen Tisch aufmachen"], vn: ["Khởi động lại toàn bộ", "Dùng chức năng Void/Storno, nhập lý do", "Bỏ qua", "Mở bàn mới"] }, ans: 1 }
-      ],
-      // 🍸 Fachkompetenz
-      bartechniken: [
-        { q: { de: "Wann shaked man, wann stirrt man einen Cocktail?", vn: "Khi nào lắc (shake), khi nào khuấy (stir) cocktail?" }, opts: { de: ["Immer shaken", "Shaken bei Zitrus/Ei/Sahne; Stirren bei nur Spirituosen", "Stirren bei Zitrus", "Zufällig"], vn: ["Luôn lắc", "Lắc khi có chanh/trứng/kem; khuấy khi chỉ có rượu", "Khuấy khi có chanh", "Tùy ý"] }, ans: 1 },
-        { q: { de: "Jigger 2cl/4cl: Wie misst du 3cl ab?", vn: "Jigger 2cl/4cl: Đo 3cl bằng cách nào?" }, opts: { de: ["Unmöglich", "Einmal 2cl + halb 2cl-Seite (1cl)", "Dreimal füllen und leeren", "Schätzen"], vn: ["Không thể", "Một lần 2cl + nửa bên 2cl (1cl)", "Đổ vào đổ ra 3 lần", "Ước lượng"] }, ans: 1 },
-        { q: { de: "Boston Shaker: Wie öffnet man ihn nach dem Shaken?", vn: "Boston Shaker: Mở ra sau khi lắc bằng cách nào?" }, opts: { de: ["Einfach aufdrehen", "An der Naht seitlich schlagen", "Drücken von oben", "Gegen die Theke schlagen"], vn: ["Vặn ra", "Đập nhẹ vào cạnh chỗ nối", "Ấn từ trên xuống", "Đập xuống quầy"] }, ans: 1 },
-        { q: { de: "Dry Shake – was bedeutet das?", vn: "Dry Shake – nghĩa là gì?" }, opts: { de: ["Ohne Glas shaken", "Shaken ohne Eis (für Eischaum bei Egg-White-Cocktails)", "Shaken mit gefrorenem Wasser", "Sehr kurz shaken"], vn: ["Lắc không có ly", "Lắc không đá (để tạo bọt trứng)", "Lắc với nước đá đông", "Lắc rất ngắn"] }, ans: 1 }
-      ],
-      cocktail_klassiker: [
-        { q: { de: "Ein klassischer Negroni besteht aus:", vn: "Negroni cổ điển gồm những gì?" }, opts: { de: ["Vodka, Campari, Vermouth", "Gin, Campari, Sweet Vermouth (je 3cl)", "Rum, Aperol, Prosecco", "Whisky, Bitters, Zucker"], vn: ["Vodka, Campari, Vermouth", "Gin, Campari, Sweet Vermouth (mỗi thứ 3cl)", "Rum, Aperol, Prosecco", "Whisky, Bitters, đường"] }, ans: 1 },
-        { q: { de: "Old Fashioned: Welche Spirituose ist die Basis?", vn: "Old Fashioned: Rượu nền là gì?" }, opts: { de: ["Gin", "Rum", "Bourbon/Rye Whisky", "Cognac"], vn: ["Gin", "Rum", "Bourbon/Rye Whisky", "Cognac"] }, ans: 2 },
-        { q: { de: "Martini: Gerührt oder geschüttelt – was ist klassisch?", vn: "Martini: Khuấy hay lắc – thế nào là cổ điển?" }, opts: { de: ["Geschüttelt (a la Bond)", "Gerührt – klarer, seidiger", "Beides ist gleich", "Gemixt im Blender"], vn: ["Lắc (phong cách Bond)", "Khuấy – trong hơn, mượt hơn", "Cả hai đều giống nhau", "Xay trong máy"] }, ans: 1 },
-        { q: { de: "Welcher Cocktail hat frische Minze als Hauptzutat?", vn: "Cocktail nào có bạc hà tươi là nguyên liệu chính?" }, opts: { de: ["Negroni", "Mojito", "Manhattan", "Daiquiri"], vn: ["Negroni", "Mojito", "Manhattan", "Daiquiri"] }, ans: 1 }
-      ],
-      // 🍽️ Service
-      tisch_setup: [
-        { q: { de: "Wo liegt das Messer beim japanischen Tisch-Setup?", vn: "Dao đặt ở đâu trong setup bàn kiểu Nhật?" }, opts: { de: ["Links vom Teller", "Rechts vom Teller mit Schneide nach innen", "Auf dem Teller", "Vor dem Teller"], vn: ["Bên trái đĩa", "Bên phải đĩa, lưỡi dao quay vào trong", "Trên đĩa", "Trước đĩa"] }, ans: 1 },
-        { q: { de: "Shoyu-Schälchen: Wie wird es befüllt?", vn: "Chén đựng Shoyu: Đổ vào như thế nào?" }, opts: { de: ["Voll bis zum Rand", "Etwa 1–2cl, nachfüllen auf Wunsch", "Gar nicht, Gast füllt selbst", "Halbvoll immer"], vn: ["Đầy đến miệng chén", "Khoảng 1–2cl, châm thêm khi khách cần", "Không đổ, khách tự rót", "Luôn nửa chén"] }, ans: 1 },
-        { q: { de: "Stäbchen: Wie werden sie platziert?", vn: "Đũa: Đặt như thế nào?" }, opts: { de: ["Hoch aufrecht im Reisnapf stehend", "Senkrecht zum Tischrand auf Hashi-Oki (Stäbchenhalter)", "Quer über dem Teller", "Rechts neben dem Messer"], vn: ["Cắm thẳng đứng vào bát cơm", "Nằm ngang trên gác đũa Hashi-Oki, song song mép bàn", "Nằm ngang trên đĩa", "Bên phải dao"] }, ans: 1 },
-        { q: { de: "Tisch wurde benutzt – was prüfst du vor neuem Gast?", vn: "Bàn vừa dùng xong – kiểm tra gì trước khi đón khách mới?" }, opts: { de: ["Nur Speisekarte auslegen", "Tisch abwischen, alle Utensilien ersetzen, Stühle geradestellen, Boden prüfen", "Nichts, Gast setzt sich direkt", "Nur Glas wechseln"], vn: ["Chỉ đặt menu", "Lau bàn, thay đầy đủ dụng cụ, chỉnh ghế thẳng, kiểm tra sàn", "Không cần, khách ngồi luôn", "Chỉ đổi ly"] }, ans: 1 }
-      ],
-      kassieren: [
-        { q: { de: "Gast zahlt 37,50€ mit 50€ – wie viel Wechselgeld?", vn: "Khách trả 50€ cho tổng 37,50€ – trả lại bao nhiêu?" }, opts: { de: ["11,50€", "12,50€", "13,00€", "12,00€"], vn: ["11,50€", "12,50€", "13,00€", "12,00€"] }, ans: 1 },
-        { q: { de: "Kartenzahlung schlägt fehl – was sagst du?", vn: "Thanh toán thẻ thất bại – bạn nói gì?" }, opts: { de: ["'Ihre Karte ist schlecht'", "'Leider hat die Karte nicht funktioniert – möchten Sie es nochmal versuchen oder bar bezahlen?'", "Karte nehmen und nochmals sweeepen ohne zu fragen", "Gast wegschicken"], vn: ["'Thẻ của bạn xấu'", "'Xin lỗi thẻ chưa qua – bạn thử lại hoặc thanh toán tiền mặt được không?'", "Quẹt lại không hỏi", "Mời khách ra ngoài"] }, ans: 1 },
-        { q: { de: "Rechnungssplitting: Tisch für 4 Personen, Gesamt 80€, gleiche Teile – wieviel zahlt jeder?", vn: "Chia bill đều: 4 người, tổng 80€, mỗi người trả bao nhiêu?" }, opts: { de: ["15€", "20€", "25€", "30€"], vn: ["15€", "20€", "25€", "30€"] }, ans: 1 },
-        { q: { de: "Gast bekommt falschen Betrag auf der Rechnung – was tust du?", vn: "Khách bị tính sai trên bill – bạn làm gì?" }, opts: { de: ["Ignorieren", "Entschuldigen, sofort korrigieren, neue Rechnung drucken", "Sagen 'das stimmt so'", "Manager holen ohne sich zu entschuldigen"], vn: ["Bỏ qua", "Xin lỗi, sửa ngay, in bill mới", "Nói 'đúng rồi đó'", "Gọi manager mà không xin lỗi"] }, ans: 1 }
-      ],
-      reklamationsmanagement: [
-        { q: { de: "Gast beschwert sich über kaltes Essen – erste Reaktion?", vn: "Khách phàn nàn đồ ăn nguội – phản ứng đầu tiên?" }, opts: { de: ["Erklären warum es kalt sein könnte", "Entschuldigen, Teller mitnehmen, sofort aufwärmen oder neu machen", "Sagen 'das war so gedacht'", "Zum Manager schicken ohne Entschuldigung"], vn: ["Giải thích tại sao có thể nguội", "Xin lỗi, mang đĩa đi, hâm nóng hoặc làm lại ngay", "Nói 'được làm như vậy đó'", "Đẩy sang manager mà không xin lỗi"] }, ans: 1 },
-        { q: { de: "Was bedeutet 'deeskalieren' bei einer Beschwerde?", vn: "'Deeskalieren' khi khiếu nại nghĩa là gì?" }, opts: { de: ["Den Gast ignorieren bis er aufhört", "Ruhig bleiben, aktiv zuhören, Lösung anbieten", "Laut zurücksprechen", "Sicherheitsdienst rufen"], vn: ["Bỏ mặc khách cho đến khi họ thôi", "Bình tĩnh, lắng nghe chủ động, đề xuất giải pháp", "Nói to lại", "Gọi bảo vệ"] }, ans: 1 },
-        { q: { de: "Gast ist dauerhaft unzufrieden und wird laut – was tust du?", vn: "Khách liên tục không hài lòng và to tiếng – bạn làm gì?" }, opts: { de: ["Auch lauter werden", "Ruhig bleiben, in separaten Bereich bitten, Manager hinzuziehen", "Wegrennen", "Andere Gäste um Hilfe bitten"], vn: ["Nói to lại", "Giữ bình tĩnh, mời ra chỗ riêng, gọi manager", "Bỏ chạy", "Nhờ khách khác giúp đỡ"] }, ans: 1 },
-        { q: { de: "Welche Kompensation ist bei kleiner Beschwerde angemessen?", vn: "Khi nào nên đền bù cho khiếu nại nhỏ?" }, opts: { de: ["Immer alles umsonst", "Gratis Getränk, Entschuldigung, evtl. Rabatt – verhältnismäßig", "Gar nichts anbieten", "Geldstrafe für Köche"], vn: ["Luôn cho miễn phí hết", "Đồ uống miễn phí, xin lỗi, chiết khấu nếu cần – tương xứng", "Không đề xuất gì", "Phạt đầu bếp"] }, ans: 1 }
-      ],
-      // 💰 Wirtschaft
-      getraenkekalkulation: [
-        { q: { de: "Wareneinsatzquote 20%: Ein Cocktail kostet 2,50€ in Zutaten. Was ist der Netto-VK?", vn: "Tỷ lệ NVL 20%: Cocktail tốn 2,50€ nguyên liệu. Giá bán thuần là bao nhiêu?" }, opts: { de: ["5,00€", "10,00€", "12,50€", "25,00€"], vn: ["5,00€", "10,00€", "12,50€", "25,00€"] }, ans: 2 },
-        { q: { de: "MwSt in Deutschland für Restaurantgetränke:", vn: "Thuế VAT ở Đức cho đồ uống nhà hàng:" }, opts: { de: ["7%", "10%", "19%", "0%"], vn: ["7%", "10%", "19%", "0%"] }, ans: 2 },
-        { q: { de: "Pour-Cost von 35% – was bedeutet das?", vn: "Pour-Cost 35% – điều này có nghĩa gì?" }, opts: { de: ["Sehr gut, unter Zielbereich", "Akzeptabel", "Zu hoch – über dem Zielbereich von 18–24%", "Normal für Craft-Cocktails"], vn: ["Rất tốt, dưới mức mục tiêu", "Chấp nhận được", "Quá cao – vượt mức mục tiêu 18–24%", "Bình thường cho Craft Cocktail"] }, ans: 2 },
-        { q: { de: "Was ist ein Deckungsbeitrag?", vn: "Deckungsbeitrag (lợi nhuận đóng góp) là gì?" }, opts: { de: ["Nur der Gewinn nach Steuern", "Verkaufspreis minus variable Kosten (Wareneinsatz)", "Gehalt des Barkeepers", "Gesamtumsatz des Abends"], vn: ["Chỉ là lợi nhuận sau thuế", "Giá bán trừ chi phí biến đổi (nguyên vật liệu)", "Lương bartender", "Tổng doanh thu buổi tối"] }, ans: 1 }
-      ],
-      // ⚖️ Compliance
-      jugendschutz: [
-        { q: { de: "Ab welchem Alter darf man in Deutschland Bier kaufen?", vn: "Ở Đức, bao nhiêu tuổi được mua bia?" }, opts: { de: ["14 Jahre", "16 Jahre", "18 Jahre", "21 Jahre"], vn: ["14 tuổi", "16 tuổi", "18 tuổi", "21 tuổi"] }, ans: 1 },
-        { q: { de: "Gast sieht jung aus, kein Ausweis dabei – was tust du?", vn: "Khách trông trẻ, không có CCCD – bạn làm gì?" }, opts: { de: ["Trotzdem ausschenken", "Alkohol verweigern – kein Ausweis = kein Alkohol", "Nur Bier erlauben", "Manager fragen ob es okay ist"], vn: ["Vẫn phục vụ", "Từ chối – không có giấy tờ = không có rượu bia", "Chỉ cho phép bia", "Hỏi manager có được không"] }, ans: 1 },
-        { q: { de: "Ab welchem Alter darf man Spirituosen (Schnaps) kaufen?", vn: "Bao nhiêu tuổi được mua rượu mạnh?" }, opts: { de: ["16 Jahre", "18 Jahre", "21 Jahre", "Kein Altersminimum"], vn: ["16 tuổi", "18 tuổi", "21 tuổi", "Không có giới hạn tuổi"] }, ans: 1 },
-        { q: { de: "Was riskiert das Restaurant wenn Alkohol an Minderjährige ausgeschenkt wird?", vn: "Nhà hàng có nguy cơ gì khi bán rượu cho người dưới tuổi?" }, opts: { de: ["Gar nichts", "Hohe Geldstrafe und Entzug der Lizenz", "Nur eine Verwarnung", "Nur eine kleine Steuerstrafe"], vn: ["Không có gì", "Phạt nặng và thu hồi giấy phép", "Chỉ là cảnh cáo", "Chỉ là phạt thuế nhỏ"] }, ans: 1 }
-      ],
-      haccp_bar: [
-        { q: { de: "HSD bedeutet:", vn: "HSD có nghĩa là:" }, opts: { de: ["Heiß-Schnell-Dienen", "Haltbarkeitsdatum (Mindesthaltbarkeitsdatum)", "Hausservice-Dienst", "Hochleistungs-System-Datei"], vn: ["Phục vụ nóng nhanh", "Hạn sử dụng (date de péremption)", "Dịch vụ nhà hàng", "File hệ thống hiệu năng cao"] }, ans: 1 },
-        { q: { de: "Frisches Obst für Mojito – wo lagert man es im Bar-Kühlschrank?", vn: "Trái cây tươi làm Mojito – để ở đâu trong tủ lạnh bar?" }, opts: { de: ["Oben, direkt über rohem Fleisch", "Getrennt von rohem Fleisch und Fisch, falls vorhanden", "Auf dem Boden des Kühlschranks", "Egal, Obst ist unempfindlich"], vn: ["Trên cùng, ngay trên thịt sống", "Tách biệt với thịt và cá sống nếu có", "Dưới đáy tủ lạnh", "Tùy, trái cây không nhạy cảm"] }, ans: 1 },
-        { q: { de: "Allergenkennzeichnung: Was muss man bei Haselnuss-Sirup tun?", vn: "Nhãn dị ứng: Phải làm gì với siro hạt phỉ?" }, opts: { de: ["Nichts, Nüsse sind kein Allergen", "Klar auf der Karte als 'enthält Nüsse' kennzeichnen", "Nur mündlich informieren wenn gefragt", "Den Sirup verstecken"], vn: ["Không cần làm gì, hạt không phải dị ứng nguyên", "Ghi rõ trên menu 'có chứa hạt'", "Chỉ thông báo miệng khi được hỏi", "Giấu đi siro đó"] }, ans: 1 },
-        { q: { de: "Eismaschine: Wie oft sollte sie gereinigt werden?", vn: "Máy làm đá: Bao lâu vệ sinh một lần?" }, opts: { de: ["Einmal im Jahr", "Täglich auswischen, wöchentlich desinfizieren", "Nie – Eis ist ja kalt", "Nur wenn es riecht"], vn: ["Mỗi năm một lần", "Lau hàng ngày, khử trùng hàng tuần", "Không bao giờ – đá thì lạnh rồi", "Chỉ khi có mùi"] }, ans: 1 }
-      ],
-      // 📢 Sales
-      gasteberatung: [
-        { q: { de: "Gast sagt 'Ich mag nichts zu Süßes' – was empfiehlst du?", vn: "Khách nói 'tôi không thích ngọt' – bạn đề xuất gì?" }, opts: { de: ["Süßesten Cocktail empfehlen", "Negroni, Aperol Spritz oder Dry Martini vorschlagen", "Sagen 'dann trinken Sie Wasser'", "Gar nichts empfehlen"], vn: ["Đề xuất cocktail ngọt nhất", "Gợi ý Negroni, Aperol Spritz hoặc Dry Martini", "Nói 'vậy uống nước đi'", "Không đề xuất gì"] }, ans: 1 },
-        { q: { de: "Was ist Upselling?", vn: "Upselling là gì?" }, opts: { de: ["Kunden zu billigeren Produkten leiten", "Kunden zu höherwertigeren/teureren Alternativen führen", "Mehr Mengen verkaufen", "Rabatte anbieten"], vn: ["Hướng khách đến sản phẩm rẻ hơn", "Hướng khách đến sản phẩm cao cấp/đắt hơn", "Bán số lượng nhiều hơn", "Đưa ra chiết khấu"] }, ans: 1 },
-        { q: { de: "Gast bestellt Bier – wann bietest du ein Premium-Upgrade an?", vn: "Khách order bia – khi nào đề xuất nâng cấp Premium?" }, opts: { de: ["Nie", "Immer und aufdringlich", "Einmal freundlich erwähnen: 'Wir haben auch X – möchten Sie das probieren?'", "Nur wenn Gast fragt"], vn: ["Không bao giờ", "Luôn luôn và quấy rầy", "Một lần nhẹ nhàng: 'Chúng tôi còn có X – bạn muốn thử không?'", "Chỉ khi khách hỏi"] }, ans: 2 },
-        { q: { de: "Gast googelt das Restaurant – was beeinflusst die Bewertung am meisten?", vn: "Khách Google nhà hàng – điều gì ảnh hưởng đánh giá nhiều nhất?" }, opts: { de: ["Anzahl der Tische", "Servicequalität, Freundlichkeit, Reaktion auf Bewertungen", "Preis der Parkplätze", "Öffnungszeiten"], vn: ["Số lượng bàn", "Chất lượng dịch vụ, thân thiện, phản hồi đánh giá", "Giá bãi đỗ xe", "Giờ mở cửa"] }, ans: 1 }
-      ],
-      // 🌐 Soft Skills
-      gastfreundschaft: [
-        { q: { de: "Ein Gast betritt das Restaurant und niemand schaut auf – was ist falsch?", vn: "Khách bước vào nhà hàng mà không ai nhìn lên – vấn đề gì?" }, opts: { de: ["Nichts, Personal ist beschäftigt", "Fehlender Blickkontakt und Begrüßung – erster Eindruck verloren", "Gast sollte warten", "Nur Problem wenn es ein VIP ist"], vn: ["Không sao, nhân viên đang bận", "Thiếu giao tiếp mắt và chào đón – mất ấn tượng đầu tiên", "Khách nên chờ", "Chỉ là vấn đề nếu là VIP"] }, ans: 1 },
-        { q: { de: "Wie reagierst du wenn ein Gast schlechter Laune ist?", vn: "Bạn phản ứng thế nào khi khách đang cáu kỉnh?" }, opts: { de: ["Auch schlecht gelaunt sein", "Ruhig, freundlich und verständnisvoll bleiben", "Gast ignorieren", "Kollegen schicken"], vn: ["Cũng cáu theo", "Giữ bình tĩnh, thân thiện và thông cảm", "Bỏ mặc khách", "Nhờ đồng nghiệp"] }, ans: 1 },
-        { q: { de: "Empathie am Arbeitsplatz bedeutet:", vn: "Đồng cảm tại nơi làm việc có nghĩa là:" }, opts: { de: ["Immer zustimmen", "Die Perspektive anderer verstehen und darauf eingehen", "Gefühle zeigen immer vorzeigen", "Keine Grenzen setzen"], vn: ["Luôn đồng ý", "Hiểu quan điểm người khác và phản hồi phù hợp", "Luôn thể hiện cảm xúc", "Không đặt ranh giới"] }, ans: 1 },
-        { q: { de: "Wie merkt man, dass ein Gast einen Tisch möchte?", vn: "Làm sao biết khách muốn có bàn?" }, opts: { de: ["Gast muss laut rufen", "Blickkontakt suchen, am Eingang stehen, hereinschauen", "Nur nach Reservierung fragen", "Warten bis Gast selbst setzt"], vn: ["Khách phải gọi to", "Khách nhìn quanh, đứng ở lối vào, nhìn vào bên trong", "Chỉ hỏi đặt bàn chưa", "Chờ khách tự ngồi"] }, ans: 1 }
-      ],
-      stressresistenz: [
-        { q: { de: "Rush Hour: 10 Tische gleichzeitig bestellen – was tust du zuerst?", vn: "Giờ cao điểm: 10 bàn cùng order – bạn làm gì trước?" }, opts: { de: ["Panisch werden", "Priorisieren: Getränke zuerst, dann Essen, kommunizieren", "Einen Tisch komplett ignorieren", "Nach Hause gehen"], vn: ["Hoảng loạn", "Ưu tiên: đồ uống trước, sau đó đồ ăn, thông tin liên lạc", "Bỏ qua hẳn một bàn", "Về nhà"] }, ans: 1 },
-        { q: { de: "Kollege fällt kurzfristig aus – was ist deine Haltung?", vn: "Đồng nghiệp nghỉ đột xuất – thái độ của bạn?" }, opts: { de: ["Beschweren und verweigern", "Flexibel mithelfen, Team informieren, Lösungen suchen", "Auch nach Hause gehen", "Nur eigene Station machen"], vn: ["Phàn nàn và từ chối", "Linh hoạt hỗ trợ, thông báo team, tìm giải pháp", "Cũng về nhà", "Chỉ làm trạm của mình"] }, ans: 1 },
-        { q: { de: "Was hilft bei hohem Stress im Service am meisten?", vn: "Điều gì giúp nhất khi stress cao trong ca?" }, opts: { de: ["Atmen, priorisieren, kommunizieren", "Alles ignorieren", "Laut werden", "Pausen nehmen mitten im Service"], vn: ["Hít thở, ưu tiên, giao tiếp", "Bỏ qua tất cả", "Nói to lên", "Nghỉ giải lao giữa ca"] }, ans: 0 },
-        { q: { de: "Gast beschwert sich laut vor anderen Gästen – was first?", vn: "Khách phàn nàn to trước mặt khách khác – làm gì đầu tiên?" }, opts: { de: ["Wegrennen", "Gäste ansprechen: ruhig, kurz entschuldigen, in ruhigere Zone leiten", "Auch laut antworten", "Polizei rufen"], vn: ["Bỏ chạy", "Nhẹ nhàng xin lỗi ngắn, mời sang khu vực yên tĩnh", "Cũng nói to", "Gọi công an"] }, ans: 1 }
-      ]
-    };
-
-    // Checklist items per subskill (3-4 items each)
-    const CHECKLIST = {
-      mise_en_place_cold: [{ de: "Station vollständig eingerichtet vor Service", vn: "Setup trạm đầy đủ trước ca" }, { de: "Nori trocken und griffbereit", vn: "Nori khô và dễ lấy" }, { de: "Alle Füllungen und Toppings vorbereitet", vn: "Nhân và topping đã chuẩn bị xong" }, { de: "Messer scharf und sauber", vn: "Dao sắc và sạch" }],
-      sushi_reis: [{ de: "Reis richtig gewaschen und gekocht", vn: "Vo và nấu cơm đúng cách" }, { de: "Essig-Würzung korrekt gemischt", vn: "Trộn giấm đúng tỷ lệ" }, { de: "Reis bei Körpertemperatur beim Formen", vn: "Cơm đạt nhiệt độ cơ thể khi nắm" }, { de: "Konsistenz: klebrig aber nicht matschig", vn: "Độ dẻo: dính nhưng không bết" }],
-      nigiri_maki_basics: [{ de: "Nigiri fest und gleichmäßig geformt", vn: "Nigiri nắm chắc và đều" }, { de: "Maki gleichmäßig gerollt, kein Reis seitlich", vn: "Maki cuốn đều, không rơi cơm" }, { de: "Schnitte sauber und gerade", vn: "Cắt gọn và thẳng" }, { de: "Gunkan stabil, Nori hält an der Naht", vn: "Gunkan ổn định, Nori dính ở mép" }],
-      creative_rolls: [{ de: "Inside-Out-Reis haftet außen gleichmäßig", vn: "Cơm bên ngoài bám đều" }, { de: "Topping-Scheiben fächerförmig gleichmäßig", vn: "Lát topping xếp vảy đều" }, { de: "Roll stabil beim Schneiden", vn: "Cuộn chắc khi cắt" }, { de: "Präsentation ordentlich auf dem Teller", vn: "Trình bày gọn đẹp trên đĩa" }],
-      fish_knowledge: [{ de: "Frischeprüfung aller Fische vor Schichtbeginn", vn: "Kiểm tra độ tươi tất cả cá trước ca" }, { de: "Lagertemperaturen geprüft (0–2°C)", vn: "Kiểm tra nhiệt độ bảo quản (0–2°C)" }, { de: "FIFO korrekt angewendet", vn: "Áp dụng đúng FIFO" }, { de: "Allergen-relevante Fischarten bekannt", vn: "Nắm các loại cá gây dị ứng" }],
-      asiat_zutaten_prep: [{ de: "Alle Zutaten frisch und vorbereitet", vn: "Tất cả nguyên liệu tươi và đã sơ chế" }, { de: "Richtige Schnittformen für das Gericht", vn: "Hình thái cắt đúng cho từng món" }, { de: "Gewürze und Saucen bereit", vn: "Gia vị và sốt đã sẵn sàng" }, { de: "Station sauber und hygienisch", vn: "Trạm sạch sẽ và vệ sinh" }],
-      haccp_hot_kitchen: [{ de: "Kerntemperaturen bei Fleisch geprüft", vn: "Đã đo nhiệt độ lõi thịt" }, { de: "Farbkodierte Bretter korrekt verwendet", vn: "Dùng đúng màu thớt" }, { de: "Kühlkette nicht unterbrochen", vn: "Không đứt chuỗi lạnh" }, { de: "Hände zwischen Kontakt verschiedener Lebensmittel gewaschen", vn: "Rửa tay giữa các lần tiếp xúc thực phẩm" }],
-      mise_en_place: [{ de: "Station vollständig vor Schichtbeginn", vn: "Trạm đầy đủ trước khi ca bắt đầu" }, { de: "Eis ausreichend vorhanden", vn: "Đá đủ dùng" }, { de: "Sirup-Flaschen aufgefüllt", vn: "Chai siro đã châm đầy" }, { de: "Garnitur frisch geschnitten", vn: "Trang trí đã cắt tươi" }],
-      pos_bar: [{ de: "Bestelleingabe fehlerfrei", vn: "Nhập order không lỗi" }, { de: "Split-Billing korrekt", vn: "Tách bill đúng" }, { de: "Tagesabschluss vollständig durchgeführt", vn: "Kết ca đầy đủ" }, { de: "Fehlkorrekturen sauber dokumentiert", vn: "Sửa lỗi có ghi chép rõ" }],
-      bartechniken: [{ de: "Shake/Stir-Entscheidung korrekt", vn: "Quyết định lắc/khuấy đúng" }, { de: "Jigger-Maße präzise", vn: "Đo Jigger chính xác" }, { de: "Glas sauber und passend", vn: "Ly sạch và phù hợp" }, { de: "Garnitur ordentlich angefügt", vn: "Gắn trang trí gọn đẹp" }],
-      cocktail_klassiker: [{ de: "Originalrezept korrekt reproduziert", vn: "Tái tạo đúng công thức gốc" }, { de: "Serviert in korrekt temperiertem Glas", vn: "Phục vụ trong ly đúng nhiệt độ" }, { de: "Garnitur entspricht Klassiker-Standard", vn: "Trang trí đúng tiêu chuẩn" }, { de: "Gast wurden Zutaten erläutert", vn: "Giải thích thành phần cho khách" }],
-      tisch_setup: [{ de: "Stäbchen auf Hashi-Oki korrekt platziert", vn: "Đũa đặt đúng trên gác đũa" }, { de: "Shoyu-Schälchen sauber und positioniert", vn: "Chén Shoyu sạch và đúng vị trí" }, { de: "Tisch abgewischt und sauber übergeben", vn: "Bàn lau sạch và bàn giao đúng" }, { de: "Stühle gerade gestellt", vn: "Ghế sắp thẳng" }],
-      kassieren: [{ de: "Wechselgeld korrekt berechnet und ausgegeben", vn: "Trả tiền thừa đúng" }, { de: "Kartenrechnungen fehlerfrei", vn: "Thanh toán thẻ không lỗi" }, { de: "Split ordnungsgemäß durchgeführt", vn: "Tách bill đúng quy trình" }, { de: "Bon dem Gast korrekt übergeben", vn: "Trao bill đúng cho khách" }],
-      reklamationsmanagement: [{ de: "Beschwerde ruhig und empathisch aufgenommen", vn: "Tiếp nhận khiếu nại bình tĩnh và đồng cảm" }, { de: "Lösung schnell und passend angeboten", vn: "Đưa ra giải pháp nhanh và phù hợp" }, { de: "Eskalation vermieden", vn: "Không để leo thang" }, { de: "Gast zufrieden entlassen", vn: "Khách ra về hài lòng" }],
-      getraenkekalkulation: [{ de: "Wareneinsatz korrekt berechnet", vn: "Tính chi phí nguyên liệu đúng" }, { de: "Verkaufspreis korrekt kalkuliert", vn: "Tính giá bán đúng" }, { de: "MwSt korrekt aufgeschlagen", vn: "Cộng thuế VAT đúng" }, { de: "Deckungsbeitrag bekannt und kommuniziert", vn: "Nắm và có thể giải thích lợi nhuận đóng góp" }],
-      jugendschutz: [{ de: "Altersgrenze bekannt (16/18 Jahre)", vn: "Biết giới hạn tuổi (16/18)" }, { de: "ID-Kontrolle konsequent durchgeführt", vn: "Kiểm tra giấy tờ nhất quán" }, { de: "Ablehnung höflich aber bestimmt", vn: "Từ chối lịch sự nhưng kiên quyết" }, { de: "Risiken für das Restaurant bekannt", vn: "Biết rủi ro cho nhà hàng" }],
-      haccp_bar: [{ de: "Allergene auf der Karte korrekt ausgewiesen", vn: "Dị ứng nguyên trên menu ghi đúng" }, { de: "HSD-Kontrolle durchgeführt", vn: "Đã kiểm tra hạn sử dụng" }, { de: "Eis-Maschine gereinigt", vn: "Vệ sinh máy đá" }, { de: "Kühlung geprüft (4–7°C)", vn: "Kiểm tra nhiệt độ làm lạnh (4–7°C)" }],
-      gasteberatung: [{ de: "Gastwünsche aktiv erfragt", vn: "Chủ động hỏi sở thích khách" }, { de: "Passende Empfehlung gegeben", vn: "Đề xuất phù hợp" }, { de: "Upselling einmal freundlich versucht", vn: "Thử upselling một lần lịch sự" }, { de: "Gast zufrieden mit Auswahl", vn: "Khách hài lòng với lựa chọn" }],
-      gastfreundschaft: [{ de: "Gast bei Ankunft begrüßt (< 30 Sek.)", vn: "Chào đón khách khi đến (< 30 giây)" }, { de: "Blickkontakt und Lächeln", vn: "Giao tiếp bằng mắt và mỉm cười" }, { de: "Gast beim Gehen verabschiedet", vn: "Chào tạm biệt khi khách đi" }, { de: "Positive Atmosphäre geschaffen", vn: "Tạo bầu không khí tích cực" }],
-      stressresistenz: [{ de: "Ruhig geblieben unter Druck", vn: "Giữ bình tĩnh dưới áp lực" }, { de: "Prioritäten korrekt gesetzt", vn: "Đặt ưu tiên đúng" }, { de: "Team kommuniziert bei Überlastung", vn: "Thông báo cho team khi quá tải" }, { de: "Fehler unter Stress vermieden oder schnell korrigiert", vn: "Tránh lỗi hoặc sửa nhanh khi stress" }]
-    };
-
-    function getQuizQuestions(subId, lang) {
-      const pool = QUIZ[subId];
-      if (!pool) return [];
-      // Shuffle and pick 3
-      const shuffled = [...pool].sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, Math.min(3, shuffled.length));
-    }
-
-    function calcLevel(quizPct, checkPct) {
-      const total = quizPct * 0.4 + checkPct * 0.6;
-      if (total >= 90) return 4;
-      if (total >= 75) return 3;
-      if (total >= 55) return 2;
-      if (total >= 35) return 1;
-      return 0;
-    }
-
-    const LEVEL_META = {
-      0: { l: "—", c: "#94a3b8", emoji: "⬜" },
-      1: { l: "Junior", c: "#fbbf24", emoji: "🟡" },
-      2: { l: "Advanced", c: "#34d399", emoji: "🟢" },
-      3: { l: "Expert", c: "#22d3ee", emoji: "🔵" },
-      4: { l: "Master", c: "#a78bfa", emoji: "🟣" }
-    };
-
-    /* ═══════════════════ CLUSTER & SUBSKILL DEFINITIONS ═══════════════════ */
-    const ASSESS_CLUSTERS = {
-      sushi_cold: {
-        icon: '🍣', de: 'Sushi & Cold Kitchen', vn: 'Sushi & Bếp lạnh', color: '#f97316',
-        subs: [
-          { id: 'mise_en_place_cold', de: 'Mise en Place Kaltküche', vn: 'Mise en Place Bếp lạnh' },
-          { id: 'sushi_reis', de: 'Sushi-Reis', vn: 'Cơm Sushi' },
-          { id: 'messertechnik', de: 'Messertechnik & Schneiden', vn: 'Kỹ thuật dao & Cắt thái' },
-          { id: 'menukenntnisse', de: 'Menükenntnisse & Zutaten', vn: 'Kiến thức menu & Nguyên liệu' },
-          { id: 'nigiri_maki_basics', de: 'Nigiri, Maki & Gunkan', vn: 'Nigiri, Maki & Gunkan' },
-          { id: 'garnishing_tsuma', de: 'Garnishing & Tsuma', vn: 'Trang trí & Tsuma' },
-          { id: 'praesentation_aburi', de: 'Präsentation & Aburi', vn: 'Trình bày & Aburi' },
-          { id: 'seafood_butchery', de: 'Seafood Butchery', vn: 'Sơ chế hải sản' },
-          { id: 'fish_knowledge', de: 'Fischkunde & Qualitätskontrolle', vn: 'Kiến thức cá & Kiểm tra CL' },
-          { id: 'sashimi_schnitt', de: 'Sashimi- & Bedeckung-Schnitt', vn: 'Cắt Sashimi & lát phủ' },
-          { id: 'creative_rolls', de: 'Special & Creative Rolls', vn: 'Special & Creative Rolls' },
-          { id: 'sashimi_art', de: 'Sashimi Art Plating', vn: 'Sashimi nghệ thuật' },
-          { id: 'teamleitung_sushi', de: 'Teamleitung Sushi-Station', vn: 'Quản lý trạm Sushi' }
-        ]
-      },
-      hot_kitchen: {
-        icon: '🔥', de: 'Hot Kitchen', vn: 'Bếp nóng', color: '#ef4444',
-        subs: [
-          { id: 'asiat_zutaten_prep', de: 'Zutaten & Mise en Place', vn: 'Nguyên liệu & Mise en Place' },
-          { id: 'reis_beilagen', de: 'Reis & Beilagen', vn: 'Cơm & Món phụ' },
-          { id: 'bon_lesen', de: 'Bon lesen & Menükenntnis', vn: 'Đọc order & Kiến thức menu' },
-          { id: 'sauberkeit_ordnung', de: 'Sauberkeit & Ordnung', vn: 'Sạch sẽ & Ngăn nắp' },
-          { id: 'tempura_frittieren', de: 'Tempura & Frittieren', vn: 'Tempura & Chiên ngập dầu' },
-          { id: 'haccp_hot_kitchen', de: 'HACCP & Lebensmittelsicherheit', vn: 'HACCP & An toàn thực phẩm' },
-          { id: 'suppen_bruehen', de: 'Suppen & Brühen', vn: 'Súp & Nước dùng' },
-          { id: 'timing_koordination', de: 'Timing & Koordination', vn: 'Timing & Phối hợp' },
-          { id: 'qualitaet_konsistenz', de: 'Qualität & Konsistenz', vn: 'Chất lượng & Đồng nhất' },
-          { id: 'wok_hei_teppan', de: 'Wok Hei & Teppan', vn: 'Wok Hei & Teppan' },
-          { id: 'menuentwicklung', de: 'Menüentwicklung & Kalkulation', vn: 'Phát triển menu & Tính giá' }
-        ]
-      },
-      service: {
-        icon: '🍽️', de: 'Service & Gästebetreuung', vn: 'Phục vụ & Chăm sóc khách', color: '#10b981',
-        subs: [
-          { id: 'tisch_setup', de: 'Tisch-Setup & Mise en Place', vn: 'Setup bàn & Mise en Place' },
-          { id: 'serviertechnik', de: 'Serviertechnik & Abräumen', vn: 'Kỹ thuật phục vụ & Dọn bàn' },
-          { id: 'gaestebegrussung', de: 'Gästebegrüßung', vn: 'Chào đón khách' },
-          { id: 'kassieren', de: 'Kassieren & Abrechnung', vn: 'Thu ngân & Thanh toán' },
-          { id: 'getraenkeservice', de: 'Getränkeservice & Menükenntnis', vn: 'DV đồ uống & Kiến thức menu' },
-          { id: 'weinberatung', de: 'Wein- & Getränkeberatung', vn: 'Tư vấn rượu & Đồ uống' },
-          { id: 'bestellannahme', de: 'Bestellannahme & Bon-Genauigkeit', vn: 'Nhận order & Độ chính xác' },
-          { id: 'platzierung', de: 'Platzierung & Gästekoordination', vn: 'Sắp xếp chỗ & Điều phối' },
-          { id: 'reklamationsmanagement', de: 'Reklamationsmanagement', vn: 'Xử lý khiếu nại' },
-          { id: 'tableside', de: 'Tableside Service', vn: 'Phục vụ tại bàn' },
-          { id: 'vip_stammgaeste', de: 'VIP & Stammgäste-Pflege', vn: 'VIP & Chăm sóc khách quen' },
-          { id: 'schichtleitung_service', de: 'Schichtleitung Service', vn: 'Quản lý ca phục vụ' }
-        ]
-      },
-      bar_drinks: {
-        icon: '🍸', de: 'Fachkompetenz Getränke', vn: 'Chuyên môn Đồ uống', color: '#06b6d4',
-        subs: [
-          { id: 'eis_temperatur', de: 'Eis & Temperatur', vn: 'Đá & Nhiệt độ' },
-          { id: 'kaffee_heiss', de: 'Kaffee & Heißgetränke', vn: 'Cà phê & Đồ uống nóng' },
-          { id: 'alkoholfrei', de: 'Alkoholfreie Cocktails', vn: 'Cocktail không cồn' },
-          { id: 'bierkunde', de: 'Bierkunde', vn: 'Kiến thức bia' },
-          { id: 'bartechniken', de: 'Barkeepertechniken', vn: 'Kỹ thuật Barkeeper' },
-          { id: 'garnishing_bar', de: 'Garnishing & Präsentation', vn: 'Trang trí & Trình bày' },
-          { id: 'cocktail_klassiker', de: 'Cocktail-Klassiker', vn: 'Cocktail cổ điển' },
-          { id: 'spirituosenkunde', de: 'Spirituosenkunde', vn: 'Kiến thức rượu mạnh' },
-          { id: 'weinkunde', de: 'Weinkunde', vn: 'Kiến thức rượu vang' },
-          { id: 'mixologie', de: 'Moderne Mixologie', vn: 'Mixology hiện đại' },
-          { id: 'signature_creation', de: 'Signature Recipe Creation', vn: 'Sáng tạo công thức riêng' },
-          { id: 'homemade', de: 'Homemade Ingredients', vn: 'Tự làm nguyên liệu' }
-        ]
-      },
-      softskills: {
-        icon: '🌐', de: 'Soft Skills & Sprachen', vn: 'Kỹ năng mềm & Ngôn ngữ', color: '#14b8a6',
-        subs: [
-          { id: 'gastfreundschaft', de: 'Gastfreundschaft & Empathie', vn: 'Lòng hiếu khách & Đồng cảm' },
-          { id: 'zeitmanagement', de: 'Zeitmanagement', vn: 'Quản lý thời gian' },
-          { id: 'teamwork', de: 'Teamwork', vn: 'Làm việc nhóm' },
-          { id: 'englisch', de: 'Englisch', vn: 'Tiếng Anh' },
-          { id: 'kommunikation', de: 'Kommunikation', vn: 'Giao tiếp' },
-          { id: 'stressresistenz', de: 'Stressresistenz', vn: 'Chống stress' },
-          { id: 'showmanship', de: 'Showmanship & Flair', vn: 'Biểu diễn & Phong cách' },
-          { id: 'conflict_resolution', de: 'Conflict Resolution', vn: 'Giải quyết xung đột' },
-          { id: 'verhandlung', de: 'Verhandlungsgeschick', vn: 'Kỹ năng đàm phán' },
-          { id: 'staff_training', de: 'Staff Training & Mentoring', vn: 'Đào tạo & Hướng dẫn' }
-        ]
-      },
-      sales: {
-        icon: '📢', de: 'Sales & Marketing', vn: 'Bán hàng & Marketing', color: '#ec4899',
-        subs: [
-          { id: 'gasteberatung', de: 'Gästeberatung & Empfehlung', vn: 'Tư vấn & Đề xuất' },
-          { id: 'social_media', de: 'Social Media (Bar-Content)', vn: 'Social Media (nội dung Bar)' },
-          { id: 'bewertungsmanagement', de: 'Bewertungsmanagement', vn: 'Quản lý đánh giá' },
-          { id: 'guest_retention', de: 'Guest Retention & Loyalty', vn: 'Giữ chân & Trung thành' },
-          { id: 'cocktailkarten', de: 'Cocktailkarten-Design', vn: 'Thiết kế menu cocktail' },
-          { id: 'events', de: 'Events & Cocktailkurse', vn: 'Sự kiện & Khóa cocktail' }
-        ]
-      },
-      compliance: {
-        icon: '⚖️', de: 'Compliance & Recht', vn: 'Tuân thủ & Pháp luật', color: '#64748b',
-        subs: [
-          { id: 'arbeitsschutz', de: 'Arbeitsschutz Bar', vn: 'An toàn lao động Bar' },
-          { id: 'jugendschutz', de: 'Jugendschutzgesetz', vn: 'Luật bảo vệ trẻ em' },
-          { id: 'haccp_bar', de: 'HACCP Bar-spezifisch', vn: 'HACCP Bar' },
-          { id: 'verantwortungsvoller_ausschank', de: 'Verantwortungsvoller Ausschank', vn: 'Phục vụ rượu có trách nhiệm' },
-          { id: 'schanklizenz', de: 'Schanklizenz / Konzession', vn: 'Giấy phép kinh doanh' },
-          { id: 'dealing_authorities', de: 'Dealing with Authorities', vn: 'Làm việc với cơ quan CQ' }
-        ]
-      },
-      operations: {
-        icon: '⚙️', de: 'Operations & Workflows', vn: 'Vận hành & Quy trình', color: '#8b5cf6',
-        subs: [
-          { id: 'mise_en_place', de: 'Bar-Setup & Mise en Place', vn: 'Setup Bar & Mise en Place' },
-          { id: 'hygiene_reinigung', de: 'Hygiene & Reinigung Bar', vn: 'Vệ sinh & Dọn dẹp Bar' },
-          { id: 'pos_bar', de: 'Kassensystem (POS)', vn: 'Hệ thống POS' },
-          { id: 'lagerhaltung', de: 'Lagerhaltung (FIFO)', vn: 'Quản lý kho (FIFO)' },
-          { id: 'speed_workflow', de: 'Speed & Workflow', vn: 'Tốc độ & Quy trình' },
-          { id: 'troubleshooting', de: 'Troubleshooting', vn: 'Xử lý sự cố' }
-        ]
-      },
-      economics: {
-        icon: '💰', de: 'Wirtschaftlichkeit', vn: 'Kinh tế', color: '#eab308',
-        subs: [
-          { id: 'inventur', de: 'Inventur & Bestandsmanagement', vn: 'Kiểm kê & Quản lý tồn kho' },
-          { id: 'getraenkekalkulation', de: 'Getränkekalkulation', vn: 'Tính giá đồ uống' },
-          { id: 'umsatzoptimierung', de: 'Umsatzoptimierung & Upselling', vn: 'Tối ưu doanh thu & Upselling' },
-          { id: 'wareneinsatz', de: 'Wareneinsatz-Controlling Bar', vn: 'Kiểm soát chi phí NVL' },
-          { id: 'menu_engineering', de: 'Menu Engineering', vn: 'Menu Engineering' }
-        ]
-      }
-    };
-
-    /* ═══════════════════ buildAssess() — Vanilla JS ═══════════════════ */
-    let _assess = { step: 'select', cluster: 'sushi_cold', sub: '', questions: [], qIdx: 0, answers: [], checkItems: [], saved: false };
-
-    function buildAssess() {
-      const root = document.getElementById('assess-root');
-      if (!root) return;
-      const isVn = currentLang === 'vi';
-      const a = _assess;
-
-      if (a.step === 'select') { renderAssessSelect(root, isVn); }
-      else if (a.step === 'quiz') { renderAssessQuiz(root, isVn); }
-      else if (a.step === 'check') { renderAssessCheck(root, isVn); }
-      else if (a.step === 'result') { renderAssessResult(root, isVn); }
-    }
-
-    function renderAssessSelect(root, isVn) {
-      const a = _assess;
-      const cl = ASSESS_CLUSTERS;
-      let html = `<div class="assess-wrap">
-        <div class="assess-card assess-header"><span class="ah-icon">🎯</span><div><div class="ah-title">${isVn ? 'Đánh giá Kỹ năng' : 'Skill-Bewertung'}</div><div class="ah-sub">${isVn ? 'Quiz + Tự đánh giá thực tế' : 'Quiz + Selbsteinschätzung'}</div></div></div>
-        <div class="assess-card"><div style="display:flex;flex-direction:column;gap:16px;">
-          <div><div class="assess-label">${isVn ? 'Nhóm kỹ năng' : 'Cluster'}</div>
-          <div class="assess-cluster-bar">`;
-      Object.entries(cl).forEach(([k, c]) => {
-        const act = a.cluster === k;
-        html += `<button class="assess-cluster-btn${act ? ' active' : ''}" style="${act ? `border-color:${c.color};background:${c.color}15;color:${c.color}` : ''}" onclick="_assess.cluster='${k}';_assess.sub='';buildAssess()">${c.icon} ${isVn ? c.vn : c.de}</button>`;
-      });
-      html += `</div></div><div><div class="assess-label">Subskill</div><div class="assess-sub-grid">`;
-      const subs = cl[a.cluster]?.subs || [];
-      subs.forEach(s => {
-        const act = a.sub === s.id;
-        const hasQ = QUIZ[s.id] && QUIZ[s.id].length > 0;
-        html += `<button class="assess-sub-btn${act ? ' active' : ''}" onclick="_assess.sub='${s.id}';buildAssess()">
-          <div class="sub-name">${isVn ? s.vn : s.de}</div>
-          <div class="sub-badges">${hasQ ? '<span style="background:#eff6ff;color:#2563eb;">Quiz</span>' : ''}</div></button>`;
-      });
-      html += `</div></div>`;
-      // Info box
-      if (a.sub) {
-        const subInfo = subs.find(s => s.id === a.sub);
-        const qCount = (QUIZ[a.sub] || []).length;
-        const cCount = (CHECKLIST[a.sub] || []).length;
-        html += `<div class="assess-info-box"><div class="info-name">${cl[a.cluster].icon} ${isVn ? subInfo.vn : subInfo.de}</div>
-          <div class="info-counts">${qCount > 0 ? `<span style="color:#2563eb">✓ ${qCount} ${isVn ? 'câu hỏi' : 'Fragen'}</span>` : ''}${cCount > 0 ? `<span style="color:#059669">✓ ${cCount} ${isVn ? 'tiêu chí' : 'Kriterien'}</span>` : ''}</div></div>`;
-      }
-      html += `<button class="assess-start-btn" ${!a.sub ? 'disabled' : ''} onclick="startAssessQuiz()">${isVn ? '🚀 Bắt đầu đánh giá' : '🚀 Bewertung starten'}</button>
-        </div></div></div>`;
-      root.innerHTML = html;
-    }
-
-    function startAssessQuiz() {
-      const a = _assess;
-      const pool = QUIZ[a.sub] || [];
-      const shuffled = [...pool].sort(() => Math.random() - 0.5);
-      a.questions = shuffled.slice(0, Math.min(3, shuffled.length));
-      a.answers = new Array(a.questions.length).fill(null);
-      a.checkItems = (CHECKLIST[a.sub] || []).map(i => ({ ...i, checked: false }));
-      a.qIdx = 0;
-      a.saved = false;
-      a.step = a.questions.length > 0 ? 'quiz' : (a.checkItems.length > 0 ? 'check' : 'result');
-      buildAssess();
-    }
-
-    function renderAssessQuiz(root, isVn) {
-      const a = _assess;
-      const q = a.questions[a.qIdx];
-      const progress = Math.round((a.qIdx / a.questions.length) * 100);
-      let html = `<div class="assess-wrap">
-        <div class="assess-card assess-header"><span class="ah-icon">🎯</span><div><div class="ah-title">${isVn ? 'Đánh giá Kỹ năng' : 'Skill-Bewertung'}</div></div>
-          <button class="assess-back-btn" onclick="_assess.step='select';_assess.saved=false;buildAssess()">← ${isVn ? 'Quay lại' : 'Zurück'}</button></div>
-        <div class="assess-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <div style="font-weight:700;font-size:0.85rem;">📝 ${isVn ? `Câu ${a.qIdx+1}/${a.questions.length}` : `Frage ${a.qIdx+1}/${a.questions.length}`}</div>
-            <div style="font-size:0.72rem;color:var(--text-muted);">Quiz ${progress}%</div></div>
-          <div style="height:4px;background:var(--border);border-radius:99px;margin-bottom:20px;overflow:hidden;"><div style="height:100%;width:${progress}%;background:var(--ac);transition:width .3s;"></div></div>
-          <div style="font-weight:600;font-size:0.9rem;margin-bottom:16px;line-height:1.5;">${isVn ? q.q.vn : q.q.de}</div>
-          <div style="display:flex;flex-direction:column;gap:8px;">`;
-      (isVn ? q.opts.vn : q.opts.de).forEach((opt, i) => {
-        const sel = a.answers[a.qIdx] === i;
-        html += `<button onclick="_assess.answers[_assess.qIdx]=${i};buildAssess()" style="padding:12px 16px;border-radius:10px;border:${sel ? '2px solid var(--ac)' : '1px solid var(--border)'};background:${sel ? 'rgba(37,99,235,.08)' : 'transparent'};text-align:left;cursor:pointer;font-weight:${sel ? 700 : 400};color:${sel ? 'var(--ac)' : 'var(--text)'};font-size:0.85rem;font-family:inherit;">
-          <span style="font-weight:700;margin-right:8px;color:var(--text-muted);">${String.fromCharCode(65+i)}.</span>${opt}</button>`;
-      });
-      html += `</div><button onclick="assessNextQ()" ${a.answers[a.qIdx]===null?'disabled':''} class="assess-start-btn" style="margin-top:16px;">${a.qIdx < a.questions.length-1 ? (isVn?'Tiếp →':'Weiter →') : (isVn?'Xong Quiz →':'Quiz abschließen →')}</button>
-        </div></div>`;
-      root.innerHTML = html;
-    }
-
-    function assessNextQ() {
-      const a = _assess;
-      if (a.qIdx < a.questions.length - 1) { a.qIdx++; }
-      else { a.step = a.checkItems.length > 0 ? 'check' : 'result'; }
-      buildAssess();
-    }
-
-    function renderAssessCheck(root, isVn) {
-      const a = _assess;
-      const done = a.checkItems.filter(c => c.checked).length;
-      let html = `<div class="assess-wrap">
-        <div class="assess-card assess-header"><span class="ah-icon">🎯</span><div><div class="ah-title">${isVn ? 'Đánh giá Kỹ năng' : 'Skill-Bewertung'}</div></div>
-          <button class="assess-back-btn" onclick="_assess.step='select';_assess.saved=false;buildAssess()">← ${isVn ? 'Quay lại' : 'Zurück'}</button></div>
-        <div class="assess-card">
-          <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">✅ ${isVn ? 'Tự đánh giá thực tế' : 'Selbsteinschätzung'}</div>
-          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">${isVn ? 'Tick những gì bạn tự tin thực hiện được:' : 'Kreuze an, was du sicher ausführen kannst:'}</div>
-          <div style="display:flex;flex-direction:column;gap:10px;">`;
-      a.checkItems.forEach((item, i) => {
-        const ch = item.checked;
-        html += `<div onclick="_assess.checkItems[${i}].checked=!_assess.checkItems[${i}].checked;buildAssess()" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;border:${ch?'2px solid #059669':'1px solid var(--border)'};background:${ch?'rgba(5,150,105,.06)':'transparent'};cursor:pointer;">
-          <div style="width:20px;height:20px;border-radius:6px;border:2px solid ${ch?'#059669':'var(--border)'};background:${ch?'#059669':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${ch?'<span style="color:#fff;font-size:12px;font-weight:700;">✓</span>':''}</div>
-          <span style="font-size:0.85rem;font-weight:${ch?600:400};color:${ch?'#059669':'var(--text)'};">${isVn ? item.vn : item.de}</span></div>`;
-      });
-      html += `</div><div style="margin-top:12px;font-size:0.78rem;color:var(--text-muted);text-align:right;">${done}/${a.checkItems.length} ${isVn?'tiêu chí':'Kriterien'}</div>
-        <button onclick="_assess.step='result';buildAssess()" class="assess-start-btn" style="margin-top:16px;">${isVn ? 'Xem kết quả →' : 'Ergebnis ansehen →'}</button>
-        </div></div>`;
-      root.innerHTML = html;
-    }
-
-    function renderAssessResult(root, isVn) {
-      const a = _assess;
-      const quizCorrect = a.answers.filter((v,i) => v === a.questions[i]?.ans).length;
-      const quizPct = a.questions.length > 0 ? Math.round((quizCorrect/a.questions.length)*100) : 100;
-      const checkDone = a.checkItems.filter(c => c.checked).length;
-      const checkPct = a.checkItems.length > 0 ? Math.round((checkDone/a.checkItems.length)*100) : 100;
-      const level = calcLevel(quizPct, checkPct);
-      const lm = LEVEL_META[level];
-
-      let html = `<div class="assess-wrap">
-        <div class="assess-card assess-header"><span class="ah-icon">🎯</span><div><div class="ah-title">${isVn ? 'Đánh giá Kỹ năng' : 'Skill-Bewertung'}</div></div>
-          <button class="assess-back-btn" onclick="_assess.step='select';_assess.saved=false;buildAssess()">← ${isVn ? 'Quay lại' : 'Zurück'}</button></div>
-        <div class="assess-card">
-          <div style="font-weight:800;font-size:1rem;margin-bottom:16px;text-align:center;">📊 ${isVn ? 'Kết quả Đánh giá' : 'Bewertungsergebnis'}</div>`;
-      // Score bars
-      if (a.questions.length > 0) {
-        html += `<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:4px;"><span style="font-weight:600;">📝 Quiz (40%)</span><span style="font-weight:700;color:var(--ac);">${quizCorrect}/${a.questions.length} — ${quizPct}%</span></div>
-          <div style="height:8px;background:var(--border);border-radius:99px;overflow:hidden;"><div style="height:100%;width:${quizPct}%;background:var(--ac);transition:width .5s;"></div></div></div>`;
-      }
-      if (a.checkItems.length > 0) {
-        html += `<div style="margin-bottom:20px;"><div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:4px;"><span style="font-weight:600;">✅ ${isVn?'Thực tế (60%)':'Selbsteinschätzung (60%)'}</span><span style="font-weight:700;color:#059669;">${checkDone}/${a.checkItems.length} — ${checkPct}%</span></div>
-          <div style="height:8px;background:var(--border);border-radius:99px;overflow:hidden;"><div style="height:100%;width:${checkPct}%;background:#059669;transition:width .5s;"></div></div></div>`;
-      }
-      // Level badge
-      html += `<div style="background:${lm.c}10;border:2px solid ${lm.c};border-radius:16px;padding:20px;text-align:center;margin-bottom:16px;">
-        <div style="font-size:2rem;margin-bottom:4px;">${lm.emoji}</div>
-        <div style="font-size:1.15rem;font-weight:800;color:${lm.c};">${lm.l}</div>
-        <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">${isVn?'Đề xuất Level':'Vorgeschlagenes Level'}: ${level}/4</div></div>`;
-      // Actions
-      html += `<div style="display:flex;gap:8px;">
-        <button onclick="_assess.step='select';_assess.saved=false;buildAssess()" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;font-size:0.85rem;cursor:pointer;font-family:inherit;">${isVn?'Đánh giá lại':'Nochmal'}</button>
-        <button onclick="_assess.step='select';_assess.saved=false;buildAssess()" class="assess-save-btn" style="flex:2;padding:12px;border-radius:12px;border:none;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit;">✅ ${isVn?'Hoàn tất':'Fertig'}</button></div>
-        </div></div>`;
-      root.innerHTML = html;
-    }
-
     /* ═══════════════════════════════════════
        INIT
     ═══════════════════════════════════════ */
@@ -4201,3 +6636,7 @@
           .subscribe();
       } catch (e) { console.warn('Realtime init failed:', e); }
     })();
+  </script>
+</body>
+
+</html>
