@@ -2306,7 +2306,16 @@
 
     function buildBrowse() {
       rebuildCatFilter();
-      renderGrid('all');
+      // Default to first category instead of 'all'
+      var filtered = getFilteredByType(browseType);
+      var cats = [...new Set(filtered.map(d => d.cat))];
+      var defaultCat = cats.length > 0 ? cats[0] : 'all';
+      currentBrowseCat = defaultCat;
+      renderGrid(defaultCat);
+      // Highlight the correct cat button
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.cat === defaultCat);
+      });
     }
 
     function filterBrowseType(type, btn) {
