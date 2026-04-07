@@ -2342,6 +2342,7 @@
 
     function rebuildCatFilter() {
       const filterEl = document.getElementById('cat-filter');
+      if (!filterEl) return;
       [...filterEl.querySelectorAll('.cat-btn:not([data-cat="all"])')].forEach(b => b.remove());
       // Update "All" button text
       const allBtn = filterEl.querySelector('.cat-btn[data-cat="all"]');
@@ -2452,6 +2453,7 @@
 
     function renderGrid(cat, query) {
       const grid = document.getElementById('drink-grid');
+      if (!grid) return;
       let base = getFilteredByType(browseType);
       let items = cat === 'all' ? base : base.filter(d => d.cat === cat);
       if (query) {
@@ -2843,18 +2845,21 @@
     }
 
     function buildTrainSettings() {
+      const toggle = document.getElementById('train-type-toggle');
+      if (!toggle) return;
       rebuildTrainCatChecks();
       updateWeakCount();
       // Sync toggle UI to current trainType
-      document.querySelectorAll('#train-type-toggle .type-btn').forEach(b => {
+      toggle.querySelectorAll('.type-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.type === trainType);
       });
     }
 
     function rebuildTrainCatChecks() {
+      const container = document.getElementById('cat-checks');
+      if (!container) return;
       const base = getFilteredByType(trainType);
       const cats = [...new Set(base.map(d => d.cat))];
-      const container = document.getElementById('cat-checks');
       container.innerHTML = '';
       cats.forEach(cat => {
         const label = document.createElement('label');
@@ -2869,12 +2874,13 @@
     }
 
     function updateWeakCount() {
+      const el = document.getElementById('weak-count');
+      if (!el) return;
       const cats = getSelectedCats();
       const base = getFilteredByType(trainType);
       const pool = base.filter(d => cats.includes(d.cat));
       const weakPool = pool.filter(d => isWeak(d.name));
-      const el = document.getElementById('weak-count');
-      if (el) el.textContent = `(${weakPool.length}/${pool.length} ${T('weak_suffix')})`;
+      el.textContent = `(${weakPool.length}/${pool.length} ${T('weak_suffix')})`;
     }
 
     // Weak toggle styling
