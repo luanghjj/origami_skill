@@ -4145,7 +4145,8 @@
     // Init nickname display
     (function initNickname() {
       const player = getCurrentPlayer();
-      document.getElementById('nick-display').textContent = player || '—';
+      const nickEl = document.getElementById('nick-display');
+      if (nickEl) nickEl.textContent = player || '—';
       if (!player) {
         // First visit: show modal after short delay
         setTimeout(() => openNickModal(), 600);
