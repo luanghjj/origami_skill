@@ -4136,75 +4136,72 @@
     }
 
     /* ═══════════════════════════════════════
-       INIT
+       INIT — safe wrapper
     ═══════════════════════════════════════ */
-    applyLang();
-    buildBrowse();
-    buildTrainSettings();
-
-    // Init nickname display
-    (function initNickname() {
-      const player = getCurrentPlayer();
-      const nickEl = document.getElementById('nick-display');
-      if (nickEl) nickEl.textContent = player || '—';
-      if (!player) {
-        // First visit: show modal after short delay
-        setTimeout(() => openNickModal(), 600);
-      } else {
-        syncScoresFromSupabase();
-        applyAddTabVisibility();
-      }
-    })();
-
-    // Fetch latest from Supabase after UI is ready
-    syncFromSupabase();
-    syncOverridesFromSupabase().then(() => renderGrid(currentBrowseCat, currentSearch));
-    // Sync drink images
-    applyImagesToDrinks();
-    syncDrinkImages().then(() => renderGrid(currentBrowseCat, currentSearch));
-
-    // Service Worker disabled — direct loading is faster and more reliable
-    // if ('serviceWorker' in navigator) {
-    //   navigator.serviceWorker.register('sw.js').catch(() => { });
-    // }
-
-    // ── Supabase Realtime: tự động cập nhật khi có thay đổi ──
-    (function startRealtimeSync() {
-      if (!sb) return;
+    function safeInit() {
       try {
-        sb.channel('drink_formulas_changes')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'drink_formulas' }, payload => {
-            const { eventType, new: row, old: oldRow } = payload;
+        applyLang();
+        buildBrowse();
+        buildTrainSettings();
 
-            if (eventType === 'INSERT' || eventType === 'UPDATE') {
-              const d = rowToDrink(row);
-              // Cập nhật DRINKS array
-              const idx = DRINKS.findIndex(x => x.name === d.name);
-              if (idx !== -1) DRINKS[idx] = d; else DRINKS.push(d);
-              // Cập nhật localStorage cache
-              let cache = loadCustomDrinks();
-              const ci = cache.findIndex(x => x.name === d.name);
-              if (ci !== -1) cache[ci] = d; else cache.push(d);
-              saveCustomDrinks(cache);
-              rebuildCatFilter();
-              rebuildTrainCatChecks();
-              renderGrid(currentBrowseCat, currentSearch);
-              if (typeof buildNameSelect === 'function') buildNameSelect('');
-              showSyncBadge('realtime');
-            }
+        // Init nickname
+        var player = getCurrentPlayer();
+        var nickEl = document.getElementById('nick-display');
+        if (nickEl) nickEl.textContent = player || '—';
+        if (!player) {
+          setTimeout(function() { openNickModal(); }, 600);
+        } else {
+          syncScoresFromSupabase();
+          applyAddTabVisibility();
+        }
 
-            if (eventType === 'DELETE') {
-              const name = oldRow.name;
-              const di = DRINKS.findIndex(x => x.name === name);
-              if (di !== -1) DRINKS.splice(di, 1);
-              saveCustomDrinks(loadCustomDrinks().filter(x => x.name !== name));
-              rebuildCatFilter();
-              rebuildTrainCatChecks();
-              renderGrid(currentBrowseCat, currentSearch);
-              if (typeof buildNameSelect === 'function') buildNameSelect('');
-              showSyncBadge('realtime');
-            }
-          })
-          .subscribe();
-      } catch (e) { console.warn('Realtime init failed:', e); }
-    })();
+        // Supabase sync
+        syncFromSupabase();
+        syncOverridesFromSupabase().then(function() { renderGrid(currentBrowseCat, currentSearch); });
+        applyImagesToDrinks();
+        syncDrinkImages().then(function() { renderGrid(currentBrowseCat, currentSearch); });
+
+        // Realtime
+        if (sb) {
+          try {
+            sb.channel('drink_formulas_changes')
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'drink_formulas' }, function(payload) {
+                try {
+                  var eventType = payload.eventType, row = payload.new, oldRow = payload.old;
+                  if (eventType === 'INSERT' || eventType === 'UPDATE') {
+                    var d = rowToDrink(row);
+                    var idx = DRINKS.findIndex(function(x){return x.name===d.name;});
+                    if(idx!==-1) DRINKS[idx]=d; else DRINKS.push(d);
+                    var cache=loadCustomDrinks();
+                    var ci=cache.findIndex(function(x){return x.name===d.name;});
+                    if(ci!==-1) cache[ci]=d; else cache.push(d);
+                    saveCustomDrinks(cache);
+                    rebuildCatFilter(); rebuildTrainCatChecks();
+                    renderGrid(currentBrowseCat, currentSearch);
+                    if(typeof buildNameSelect==='function') buildNameSelect('');
+                    showSyncBadge('realtime');
+                  }
+                  if (eventType === 'DELETE') {
+                    var name=oldRow.name;
+                    var di=DRINKS.findIndex(function(x){return x.name===name;});
+                    if(di!==-1) DRINKS.splice(di,1);
+                    saveCustomDrinks(loadCustomDrinks().filter(function(x){return x.name!==name;}));
+                    rebuildCatFilter(); rebuildTrainCatChecks();
+                    renderGrid(currentBrowseCat, currentSearch);
+                    if(typeof buildNameSelect==='function') buildNameSelect('');
+                    showSyncBadge('realtime');
+                  }
+                } catch(re) { console.warn('Realtime event error:', re); }
+              })
+              .subscribe();
+          } catch(e) { console.warn('Realtime init failed:', e); }
+        }
+      } catch(e) { console.error('Init failed:', e); }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', safeInit);
+    } else {
+      safeInit();
+    }
+
