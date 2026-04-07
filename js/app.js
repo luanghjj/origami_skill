@@ -4156,10 +4156,10 @@
     applyImagesToDrinks();
     syncDrinkImages().then(() => renderGrid(currentBrowseCat, currentSearch));
 
-    // Register Service Worker for PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => { });
-    }
+    // Service Worker disabled — direct loading is faster and more reliable
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.register('sw.js').catch(() => { });
+    // }
 
     // ── Supabase Realtime: tự động cập nhật khi có thay đổi ──
     (function startRealtimeSync() {
