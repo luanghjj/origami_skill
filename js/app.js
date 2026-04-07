@@ -1445,7 +1445,7 @@
     ═══════════════════════════════════════ */
     let currentBrowseCat = 'all';
     let currentSearch = '';
-    let browseType = 'all';
+    let browseType = 'drink';
     let trainType = 'all';
     let formType = 'drink';
 
