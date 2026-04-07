@@ -2519,24 +2519,27 @@
       var badge = '<span class="weak-score '+MI.cls+'">'+MI.label+pct+'</span>';
       var ct = d.type||'drink', idf = ct==='drink'||ct==='food'||ct==='service';
       var ht = idf && d.img;
-      var dn = (d.name||'').replace(/'/g,"\\'"), di = (d.img||'').replace(/'/g,"\\'"), dq = (d.name||'').replace(/"/g,'&quot;');
-      var thumb = ht ? '<div class="card-thumb-col" onclick="event.stopPropagation();openFullImage(\''+di+'\',\''+dn+'\')"><img src="'+d.img+'" alt="'+d.name+'" loading="lazy" onerror="this.parentElement.remove()"></div>' : '';
+      var dq = (d.name||'').replace(/"/g,'&quot;');
+      var imgSafe = (d.img||'').replace(/"/g,'&quot;');
+      var thumb = ht ? '<div class="card-thumb-col" onclick="event.stopPropagation();openFullImage(&quot;'+imgSafe+'&quot;,&quot;'+dq+'&quot;)"><img src="'+d.img+'" alt="'+d.name+'" loading="lazy" onerror="this.parentElement.remove()"></div>' : '';
       var il = d.ingredients.map(function(x){return '<li>'+trVi(x)+'</li>';}).join('');
+      var ico = ct==='food' ? '\ud83c\udf7d\ufe0f' : '\ud83e\udd43';
       var front = '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><div class="cat-badge" style="margin-bottom:0;'+getCatStyle(d.cat)+'">'+trCat(d.cat)+'</div>'+badge+'</div>'
         +'<h3 style="margin-bottom:4px">'+d.name+(isCustom?' <span style="font-size:.65rem;background:var(--ac-light);color:var(--ac);padding:2px 7px;border-radius:8px;vertical-align:middle">'+T('custom_badge')+'</span>':'')+'</h3>'
         +'<p class="desc">'+trVi(d.desc)+'</p><ul class="ingredients-list">'+il+'</ul>'
-        +(d.glass?'<div class="glass-note"><span>'+(ct==='food'?'\ud83c\udf7d\ufe0f':'\ud83e\udd43')+' '+trVi(d.glass)+'</span></div>':'')
+        +(d.glass?'<div class="glass-note"><span>'+ico+' '+trVi(d.glass)+'</span></div>':'')
         +(d.note?'<div class="note-text">\ud83d\udca1 '+trVi(d.note)+'</div>':'')
         +(isCustom?'<div class="card-actions"><button class="ca-btn edit" onclick="event.stopPropagation();openEditDrink(&quot;'+dq+'&quot;)">'+T('btn_edit')+'</button><button class="ca-btn del" onclick="event.stopPropagation();deleteCardDrink(&quot;'+dq+'&quot;)">'+T('btn_del')+'</button></div>':'');
       var fHTML = ht ? '<div class="card-with-img"><div class="card-content">'+front+'</div>'+thumb+'</div>' : front;
-      var cu = idf&&isAdmin(), ub = cu?'<button class="img-upload-btn" onclick="event.stopPropagation();uploadDrinkImage(&quot;'+dq+'&quot;)">'+(d.img?T('img_change'):T('img_add'))+'</button>':'';
+      var cu = idf&&isAdmin();
+      var ub = cu?'<button class="img-upload-btn" onclick="event.stopPropagation();uploadDrinkImage(&quot;'+dq+'&quot;)">'+(d.img?T('img_change'):T('img_add'))+'</button>':'';
       var db = (cu&&d.img)?'<button class="img-delete-btn" onclick="event.stopPropagation();deleteDrinkImage(&quot;'+dq+'&quot;)">\ud83d\uddd1</button>':'';
       var bt = ht?'<div class="card-thumb-col"><img src="'+d.img+'" alt="'+d.name+'" loading="lazy" onerror="this.parentElement.remove()"></div>':'';
       var il2 = d.ingredients.map(function(x){return '<li>'+x+'</li>';}).join('');
       var back = '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><div class="cat-badge" style="margin-bottom:0;'+getCatStyle(d.cat)+'">'+d.cat+'</div>'+badge+'</div>'
         +'<h3 style="margin-bottom:4px">'+d.name+(isCustom?' <span style="font-size:.65rem;background:var(--ac-light);color:var(--ac);padding:2px 7px;border-radius:8px;vertical-align:middle">'+T('custom_badge')+'</span>':'')+'</h3>'
         +'<p class="desc">'+d.desc+'</p><ul class="ingredients-list">'+il2+'</ul>'
-        +(d.glass?'<div class="glass-note"><span>'+(ct==='food'?'\ud83c\udf7d\ufe0f':'\ud83e\udd43')+' '+d.glass+'</span></div>':'')
+        +(d.glass?'<div class="glass-note"><span>'+ico+' '+d.glass+'</span></div>':'')
         +(d.note?'<div class="note-text">\ud83d\udca1 '+d.note+'</div>':'')
         +ub+db
         +(isAdmin()?'<button class="card-edit-btn" onclick="event.stopPropagation();openEditCard(&quot;'+dq+'&quot;)">\u270f\ufe0f S\u1eeda</button>':'');
