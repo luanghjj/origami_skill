@@ -2451,110 +2451,92 @@
       document.body.appendChild(overlay);
     }
 
+    var GRID_PAGE_SIZE = 20;
+    var currentGridItems = [];
+    var _gridScores, _gridCustom;
+
     function renderGrid(cat, query) {
-      const grid = document.getElementById('drink-grid');
+      var grid = document.getElementById('drink-grid');
       if (!grid) return;
-      let base = getFilteredByType(browseType);
-      let items = cat === 'all' ? base : base.filter(d => d.cat === cat);
+      var base = getFilteredByType(browseType);
+      var items = cat === 'all' ? base : base.filter(function(d){ return d.cat === cat; });
       if (query) {
-        items = items.filter(d =>
-          d.name.toLowerCase().includes(query) ||
-          (d.desc || '').toLowerCase().includes(query) ||
-          d.ingredients.some(i => i.toLowerCase().includes(query))
-        );
+        items = items.filter(function(d){
+          return d.name.toLowerCase().includes(query) ||
+            (d.desc || '').toLowerCase().includes(query) ||
+            d.ingredients.some(function(i){ return i.toLowerCase().includes(query); });
+        });
       }
       if (items.length === 0) {
-        grid.innerHTML = `<div class="empty-msg">${query ? T('no_results') : T('no_drinks')}</div>`;
+        grid.innerHTML = '<div class="empty-msg">' + (query ? T('no_results') : T('no_drinks')) + '</div>';
         return;
       }
-      const scores = loadScores();
-      const customNames = new Set(loadCustomDrinks().map(d => d.name));
-      grid.innerHTML = items.map(d => {
-        const isCustom = customNames.has(d.name);
-        const sc = scores[d.name];
-        const mastery = getMastery(d.name);
-        const MI = [
-          { cls: 'score-none', label: T('score_none') },
-          { cls: 'score-bad', label: T('score_bad') },
-          { cls: 'score-mid', label: T('score_mid') },
-          { cls: 'score-good', label: T('score_good') }
-        ][mastery];
-        const pctStr = (sc && sc.total > 0) ? ` · ${Math.round(sc.correct / sc.total * 100)}%` : '';
-        const scoreBadge = `<span class="weak-score ${MI.cls}">${MI.label}${pctStr}</span>`;
-        const cardType = d.type || 'drink';
-        const isDrinkOrFood = cardType === 'drink' || cardType === 'food' || cardType === 'service';
-        // Front card content
-        const hasThumb = isDrinkOrFood && d.img;
-        const thumbColHTML = hasThumb
-          ? `<div class="card-thumb-col" onclick="event.stopPropagation();openFullImage('${d.img.replace(/'/g, "\\'")}','${d.name.replace(/'/g, "\\'")}')"><img src="${d.img}" alt="${d.name}" loading="lazy" onerror="this.closest('.card-with-img')?.classList.remove('card-with-img');this.parentElement.remove()"></div>`
-          : '';
-        const contentHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-        <div class="cat-badge" style="margin-bottom:0;${getCatStyle(d.cat)}">${trCat(d.cat)}</div>
-        ${scoreBadge}
-      </div>
-      <h3 style="margin-bottom:4px;">${d.name}${isCustom ? ` <span style="font-size:0.65rem;background:var(--ac-light);color:var(--ac);padding:2px 7px;border-radius:8px;vertical-align:middle;">${T('custom_badge')}</span>` : ''}</h3>
-      <p class="desc">${trVi(d.desc)}</p>
-      <ul class="ingredients-list">
-        ${d.ingredients.map(ing => `<li>${trVi(ing)}</li>`).join('')}
-      </ul>
-      ${d.glass ? `<div class="glass-note">
-        <span>${cardType === 'food' ? '🍽️' : '🥃'} ${trVi(d.glass)}</span>
-      </div>` : ''}
-      ${d.note ? `<div class="note-text">💡 ${trVi(d.note)}</div>` : ''}
-      ${isCustom ? `<div class="card-actions">
-        <button class="ca-btn edit" onclick="event.stopPropagation();openEditDrink(${JSON.stringify(d.name).replace(/"/g, '&quot;')})">${T('btn_edit')}</button>
-        <button class="ca-btn del"  onclick="event.stopPropagation();deleteCardDrink(${JSON.stringify(d.name).replace(/"/g, '&quot;')})">${T('btn_del')}</button>
-      </div>` : ''}`;
-        const frontHTML = hasThumb
-          ? `<div class="card-with-img"><div class="card-content">${contentHTML}</div>${thumbColHTML}</div>`
-          : contentHTML;
+      currentGridItems = items;
+      _gridScores = loadScores();
+      _gridCustom = new Set(loadCustomDrinks().map(function(d){ return d.name; }));
+      grid.innerHTML = '';
+      _appendPage(grid, 0);
+    }
 
-        /* ── Back card: same layout as front but in Vietnamese (original data) ── */
-        const canUpload = isDrinkOrFood && isAdmin();
-        const uploadBtnHTML = canUpload
-          ? `<button class="img-upload-btn" onclick="event.stopPropagation();uploadDrinkImage(${JSON.stringify(d.name).replace(/"/g, '&quot;')})">${d.img ? T('img_change') : T('img_add')}</button>`
-          : '';
-        const deleteBtnHTML = (canUpload && d.img)
-          ? `<button class="img-delete-btn" onclick="event.stopPropagation();deleteDrinkImage(${JSON.stringify(d.name).replace(/"/g, '&quot;')})">🗑</button>`
-          : '';
-        const backThumbHTML = hasThumb
-          ? `<div class="card-thumb-col"><img src="${d.img}" alt="${d.name}" loading="lazy" onerror="this.parentElement.remove()"></div>`
-          : '';
-        const backContentHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-        <div class="cat-badge" style="margin-bottom:0;${getCatStyle(d.cat)}">${d.cat}</div>
-        ${scoreBadge}
-      </div>
-      <h3 style="margin-bottom:4px;">${d.name}${isCustom ? ` <span style="font-size:0.65rem;background:var(--ac-light);color:var(--ac);padding:2px 7px;border-radius:8px;vertical-align:middle;">${T('custom_badge')}</span>` : ''}</h3>
-      <p class="desc">${d.desc}</p>
-      <ul class="ingredients-list">
-        ${d.ingredients.map(ing => `<li>${ing}</li>`).join('')}
-      </ul>
-      ${d.glass ? `<div class="glass-note">
-        <span>${cardType === 'food' ? '🍽️' : '🥃'} ${d.glass}</span>
-      </div>` : ''}
-      ${d.note ? `<div class="note-text">💡 ${d.note}</div>` : ''}
-      ${uploadBtnHTML}
-      ${deleteBtnHTML}
-      ${isAdmin() ? `<button class="card-edit-btn" onclick="event.stopPropagation();openEditCard(${JSON.stringify(d.name).replace(/"/g, '&quot;')})">✏️ Sửa</button>` : ''}`;
-        const backHTML = hasThumb
-          ? `<div class="card-with-img"><div class="card-content">${backContentHTML}</div>${backThumbHTML}</div>`
-          : backContentHTML;
-        return `
-    <div class="flip-container fade-in" onclick="this.classList.toggle('flipped')">
-      <div class="flip-inner">
-        <div class="flip-front drink-card" style="position:relative;">
-          <span class="flip-hint">🇩🇪 Deutsch — tippen zum Umdrehen</span>
-          ${frontHTML}
-        </div>
-        <div class="flip-back drink-card">
-          <span class="flip-hint">🇻🇳 Tiếng Việt — nhấn để lật lại</span>
-          ${backHTML}
-        </div>
-      </div>
-    </div>`;
-      }).join('');
+    function _appendPage(grid, from) {
+      var to = Math.min(from + GRID_PAGE_SIZE, currentGridItems.length);
+      var frag = document.createDocumentFragment();
+      for (var i = from; i < to; i++) {
+        var wrap = document.createElement('div');
+        wrap.innerHTML = _buildCard(currentGridItems[i]);
+        if (wrap.firstElementChild) frag.appendChild(wrap.firstElementChild);
+      }
+      // Remove old load-more btn
+      var old = grid.querySelector('.load-more-btn');
+      if (old) old.remove();
+      grid.appendChild(frag);
+      // Add load more if needed
+      if (to < currentGridItems.length) {
+        var btn = document.createElement('button');
+        btn.className = 'load-more-btn';
+        btn.textContent = 'Xem th\xeam (' + (currentGridItems.length - to) + ')';
+        btn.style.cssText = 'display:block;margin:16px auto;padding:12px 32px;background:var(--ac);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;';
+        btn.onclick = function(){ _appendPage(grid, to); };
+        grid.appendChild(btn);
+      }
+    }
+
+    function _buildCard(d) {
+      var isCustom = _gridCustom.has(d.name);
+      var sc = _gridScores[d.name];
+      var mastery = getMastery(d.name);
+      var MI = [{cls:'score-none',label:T('score_none')},{cls:'score-bad',label:T('score_bad')},{cls:'score-mid',label:T('score_mid')},{cls:'score-good',label:T('score_good')}][mastery];
+      var pct = (sc && sc.total > 0) ? ' \u00b7 ' + Math.round(sc.correct/sc.total*100) + '%' : '';
+      var badge = '<span class="weak-score '+MI.cls+'">'+MI.label+pct+'</span>';
+      var ct = d.type||'drink', idf = ct==='drink'||ct==='food'||ct==='service';
+      var ht = idf && d.img;
+      var dn = (d.name||'').replace(/'/g,"\\'"), di = (d.img||'').replace(/'/g,"\\'"), dq = (d.name||'').replace(/"/g,'&quot;');
+      var thumb = ht ? '<div class="card-thumb-col" onclick="event.stopPropagation();openFullImage(\''+di+'\',\''+dn+'\')"><img src="'+d.img+'" alt="'+d.name+'" loading="lazy" onerror="this.parentElement.remove()"></div>' : '';
+      var il = d.ingredients.map(function(x){return '<li>'+trVi(x)+'</li>';}).join('');
+      var front = '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><div class="cat-badge" style="margin-bottom:0;'+getCatStyle(d.cat)+'">'+trCat(d.cat)+'</div>'+badge+'</div>'
+        +'<h3 style="margin-bottom:4px">'+d.name+(isCustom?' <span style="font-size:.65rem;background:var(--ac-light);color:var(--ac);padding:2px 7px;border-radius:8px;vertical-align:middle">'+T('custom_badge')+'</span>':'')+'</h3>'
+        +'<p class="desc">'+trVi(d.desc)+'</p><ul class="ingredients-list">'+il+'</ul>'
+        +(d.glass?'<div class="glass-note"><span>'+(ct==='food'?'\ud83c\udf7d\ufe0f':'\ud83e\udd43')+' '+trVi(d.glass)+'</span></div>':'')
+        +(d.note?'<div class="note-text">\ud83d\udca1 '+trVi(d.note)+'</div>':'')
+        +(isCustom?'<div class="card-actions"><button class="ca-btn edit" onclick="event.stopPropagation();openEditDrink(&quot;'+dq+'&quot;)">'+T('btn_edit')+'</button><button class="ca-btn del" onclick="event.stopPropagation();deleteCardDrink(&quot;'+dq+'&quot;)">'+T('btn_del')+'</button></div>':'');
+      var fHTML = ht ? '<div class="card-with-img"><div class="card-content">'+front+'</div>'+thumb+'</div>' : front;
+      var cu = idf&&isAdmin(), ub = cu?'<button class="img-upload-btn" onclick="event.stopPropagation();uploadDrinkImage(&quot;'+dq+'&quot;)">'+(d.img?T('img_change'):T('img_add'))+'</button>':'';
+      var db = (cu&&d.img)?'<button class="img-delete-btn" onclick="event.stopPropagation();deleteDrinkImage(&quot;'+dq+'&quot;)">\ud83d\uddd1</button>':'';
+      var bt = ht?'<div class="card-thumb-col"><img src="'+d.img+'" alt="'+d.name+'" loading="lazy" onerror="this.parentElement.remove()"></div>':'';
+      var il2 = d.ingredients.map(function(x){return '<li>'+x+'</li>';}).join('');
+      var back = '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><div class="cat-badge" style="margin-bottom:0;'+getCatStyle(d.cat)+'">'+d.cat+'</div>'+badge+'</div>'
+        +'<h3 style="margin-bottom:4px">'+d.name+(isCustom?' <span style="font-size:.65rem;background:var(--ac-light);color:var(--ac);padding:2px 7px;border-radius:8px;vertical-align:middle">'+T('custom_badge')+'</span>':'')+'</h3>'
+        +'<p class="desc">'+d.desc+'</p><ul class="ingredients-list">'+il2+'</ul>'
+        +(d.glass?'<div class="glass-note"><span>'+(ct==='food'?'\ud83c\udf7d\ufe0f':'\ud83e\udd43')+' '+d.glass+'</span></div>':'')
+        +(d.note?'<div class="note-text">\ud83d\udca1 '+d.note+'</div>':'')
+        +ub+db
+        +(isAdmin()?'<button class="card-edit-btn" onclick="event.stopPropagation();openEditCard(&quot;'+dq+'&quot;)">\u270f\ufe0f S\u1eeda</button>':'');
+      var bHTML = ht?'<div class="card-with-img"><div class="card-content">'+back+'</div>'+bt+'</div>':back;
+      return '<div class="flip-container fade-in" onclick="this.classList.toggle(\'flipped\')">'
+        +'<div class="flip-inner">'
+        +'<div class="flip-front drink-card" style="position:relative"><span class="flip-hint">\ud83c\udde9\ud83c\uddea Deutsch \u2014 tippen zum Umdrehen</span>'+fHTML+'</div>'
+        +'<div class="flip-back drink-card"><span class="flip-hint">\ud83c\uddfb\ud83c\uddf3 Ti\u1ebfng Vi\u1ec7t \u2014 nh\u1ea5n \u0111\u1ec3 l\u1eadt l\u1ea1i</span>'+bHTML+'</div>'
+        +'</div></div>';
     }
 
     /* ═══════════════════════════════════════
