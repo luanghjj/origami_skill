@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debug</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  #log { background: #111; color: #0f0; padding: 16px; border-radius: 8px; 
+         font-family: monospace; font-size: 12px; white-space: pre-wrap; 
+         max-height: 80vh; overflow-y: auto; }
+  .err { color: #f44; }
+</style>
+</head><body>
+<h3>🔍 Debug Mobile</h3>
+<div id="log">Loading...\n</div>
+<script>
+  var log = document.getElementById('log');
+  function L(msg, isErr) {
+    var el = document.createElement('div');
+    el.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+    if (isErr) el.className = 'err';
+    log.appendChild(el);
+  }
+  
+  window.onerror = function(msg, src, line, col, err) {
+    L('ERROR: ' + msg + ' @ line ' + line + ':' + col, true);
+    if (err && err.stack) L('Stack: ' + err.stack, true);
+    return true;
+  };
+  
+  window.addEventListener('unhandledrejection', function(e) {
+    L('PROMISE ERROR: ' + e.reason, true);
+  });
+
+  L('Browser: ' + navigator.userAgent);
+  L('Screen: ' + screen.width + 'x' + screen.height);
+  L('Memory: ' + (navigator.deviceMemory || 'unknown') + ' GB');
+  
+  // Step 1: Load Supabase
+  L('Loading Supabase...');
+  var s1 = document.createElement('script');
+  s1.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  s1.onload = function() {
+    L('✅ Supabase loaded');
+    // Step 2: Load CSS
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'css/style.css';
+    link.onload = function() { L('✅ CSS loaded'); };
+    document.head.appendChild(link);
+    
+    // Step 3: Load app.js
+    L('Loading app.js (294KB)...');
+    var s2 = document.createElement('script');
+    s2.src = 'js/app.js';
+    s2.onload = function() { L('✅ app.js loaded & executed!'); };
+    s2.onerror = function(e) { L('❌ app.js FAILED to load: ' + e, true); };
+    document.body.appendChild(s2);
+  };
+  s1.onerror = function() { L('❌ Supabase FAILED', true); };
+  document.head.appendChild(s1);
+</script>
+</body></html>
