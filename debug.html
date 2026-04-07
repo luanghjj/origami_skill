@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+<script>
+// DEBUG: catch everything
+window.__errors = [];
+window.onerror = function(m,s,l,c,e) {
+  window.__errors.push(l+':'+c+' '+m);
+  var d = document.getElementById('debug-log');
+  if(d) d.innerHTML += '<div style="color:red">❌ '+m+' @L'+l+'</div>';
+  return true;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  var d = document.getElementById('debug-log');
+  if(d) d.innerHTML += '<div style="color:orange">⚠️ '+e.reason+'</div>';
+});
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Origami Bar">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <title>Origami — Luyện Tập Công Thức Đồ Uống</title>
+  <script>
+    // Quietly clean up old Service Workers (no reload)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        regs.forEach(function(r) { r.unregister(); });
+      });
+      caches.keys().then(function(keys) {
+        keys.forEach(function(k) { caches.delete(k); });
+      });
+    }
+  </script>
+  <script>
+    // Catch ALL JS errors and show on screen instead of crashing
+    window.onerror = function(msg, src, line, col) {
+      var d = document.createElement('div');
+      d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#dc2626;color:#fff;padding:12px 16px;font:12px monospace;word-break:break-all;';
+      d.textContent = '❌ ' + msg + ' @ line ' + line + ':' + col;
+      document.body.appendChild(d);
+      setTimeout(function(){ d.remove(); }, 8000);
+      return true; // prevent crash
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+
+<body>
+<div id="debug-log" style="position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow-y:auto;background:#111;color:#0f0;font:11px monospace;padding:8px;z-index:99999;"></div>
+<script>document.getElementById('debug-log').innerHTML='✅ HTML parsed OK<br>';</script>
+
+  <!-- ════════════ HEADER ════════════ -->
+  <header>
+    <div class="logo">ORIGAMI <span>Drink Training</span></div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="browse" onclick="switchMode('browse')"><span data-i18n="tab_browse">📖
+          Học</span></button>
+      <button class="mode-tab" data-mode="train" onclick="switchMode('train')"><span data-i18n="tab_train">🎯 Luyện
+          tập</span></button>
+      <button class="mode-tab" data-mode="assess" onclick="switchMode('assess')"><span data-i18n="tab_assess">🏅 Đánh giá</span></button>
+      <button class="mode-tab" data-mode="add" onclick="switchMode('add')"><span data-i18n="tab_add">✏️ Nhập công
+          thức</span></button>
+      <button class="mode-tab" data-mode="history" onclick="switchMode('history')"><span data-i18n="tab_history">📊 Lịch
+          sử</span></button>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button class="lang-toggle" onclick="toggleLang()" id="lang-btn" title="Chuyển ngôn ngữ">🇻🇳</button>
+      <button class="nick-badge" onclick="openNickModal()" title="Đổi tên">
+        🧑‍🍳 <span id="nick-display">...</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Nickname Modal -->
+  <div class="nick-overlay" id="nick-overlay" onclick="closeNickModalIfOutside(event)">
+    <div class="nick-modal">
+      <h3 data-i18n="nick_title">👤 Bạn là ai?</h3>
+      <p data-i18n="nick_desc">Nhập nickname để lưu tiến độ riêng của bạn</p>
+      <input class="nick-input" id="nick-input" type="text" maxlength="30" data-i18n-placeholder="nick_placeholder"
+        placeholder="Nickname của bạn..." onkeydown="if(event.key==='Enter') confirmNick()">
+      <button class="nick-confirm" onclick="confirmNick()" data-i18n="nick_confirm">✔️ Xác nhận</button>
+      <div class="nick-players-hint" id="nick-players-hint"></div>
+    </div>
+  </div>
+
+  <!-- Edit Card Modal -->
+  <div class="edit-card-overlay" id="edit-card-overlay" onclick="if(event.target===this)closeEditCard()">
+    <div class="edit-card-modal">
+      <h3>✏️ <span id="edit-card-title"></span></h3>
+      <input type="hidden" id="edit-card-name">
+      <label>Mô tả (tiếng Việt)</label>
+      <input type="text" id="edit-card-desc" placeholder="Mô tả...">
+      <label>Nguyên liệu / Bước thực hiện</label>
+      <div class="ing-form-list" id="edit-ing-list"></div>
+      <button type="button" class="add-ing-btn" onclick="addEditIngRow()" style="margin-top:6px;padding:6px 14px;border-radius:8px;background:var(--ac-light);color:var(--ac);border:none;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;">+ Thêm dòng</button>
+      <label>Ly / Dụng cụ</label>
+      <input type="text" id="edit-card-glass" placeholder="Ví dụ: Ly cao, Dĩa sushi...">
+      <label>Ghi chú</label>
+      <input type="text" id="edit-card-note" placeholder="Ghi chú...">
+      <div class="edit-actions">
+        <button class="btn-cancel" onclick="closeEditCard()">Hủy</button>
+        <button class="btn-reset" onclick="resetCardEdit()" title="Xóa chỉnh sửa, về mặc định">↩ Reset</button>
+        <button class="btn-save" onclick="saveCardEdit()">💾 Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ MAIN ════════════ -->
+  <main>
+
+    <!-- ══ BROWSE MODE ══ -->
+    <div id="browse-mode">
+      <div
+        style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+        <div class="section-title" id="browse-section-title" style="margin-bottom:0;" data-i18n="browse_title">Tất cả
+          nội dung</div>
+        <div class="type-toggle">
+          <button class="type-btn active" data-type="all" onclick="filterBrowseType('all',this)" data-i18n="type_all">📚
+            Tất cả</button>
+          <button class="type-btn" data-type="drink" onclick="filterBrowseType('drink',this)" data-i18n="type_drink">🍹
+            Đồ uống</button>
+          <button class="type-btn" data-type="food" onclick="filterBrowseType('food',this)" data-i18n="type_food">🍽️ Đồ
+            ăn</button>
+          <button class="type-btn" data-type="sushi" onclick="filterBrowseType('sushi',this)" data-i18n="type_sushi">🍣
+            Sushi</button>
+          <button class="type-btn" data-type="hotkitchen" onclick="filterBrowseType('hotkitchen',this)"
+            data-i18n="type_hotkitchen">🔥 Bếp nóng</button>
+          <button class="type-btn" data-type="service" onclick="filterBrowseType('service',this)"
+            data-i18n="type_service">🍽️ Phục vụ</button>
+          <button class="type-btn" data-type="wirtschaft" onclick="filterBrowseType('wirtschaft',this)"
+            data-i18n="type_wirtschaft">💰 Kinh tế</button>
+          <button class="type-btn" data-type="operations" onclick="filterBrowseType('operations',this)"
+            data-i18n="type_operations">🔧 Vận hành</button>
+          <button class="type-btn" data-type="fachkompetenz" onclick="filterBrowseType('fachkompetenz',this)"
+            data-i18n="type_fachkompetenz">🍸 Chuyên môn</button>
+          <button class="type-btn" data-type="compliance" onclick="filterBrowseType('compliance',this)"
+            data-i18n="type_compliance">⚖️ Tuân thủ</button>
+          <button class="type-btn" data-type="sales" onclick="filterBrowseType('sales',this)" data-i18n="type_sales">📢
+            Bán hàng</button>
+          <button class="type-btn" data-type="softskills" onclick="filterBrowseType('softskills',this)"
+            data-i18n="type_softskills">🌐 Kỹ năng mềm</button>
+        </div>
+      </div>
+
+      <div class="search-wrap" id="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" data-i18n-placeholder="search_placeholder"
+          placeholder="Tìm tên, danh mục hoặc nội dung..." oninput="onSearch(this)">
+        <button class="clear-btn" onclick="clearSearch()">✕</button>
+      </div>
+
+      <div class="cat-filter" id="cat-filter">
+        <button class="cat-btn active" data-cat="all" onclick="filterBrowse('all', this)" data-i18n="cat_all">Tất
+          cả</button>
+      </div>
+
+      <div class="drink-grid" id="drink-grid"></div>
+    </div>
+
+    <!-- ══ ADD / EDIT MODE ══ -->
+    <div id="add-mode">
+      <div class="section-title" id="add-mode-title" data-i18n="add_title">Nhập công thức</div>
+      <div class="form-card fade-in">
+
+        <div class="form-row">
+          <label data-i18n="form_type">Loại mục</label>
+          <div class="type-toggle">
+            <button type="button" class="type-btn active" id="form-type-drink" onclick="setFormType('drink')"
+              data-i18n="type_drink">🍹 Đồ uống</button>
+            <button type="button" class="type-btn" id="form-type-food" onclick="setFormType('food')"
+              data-i18n="type_food">🍽️ Đồ ăn</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_name">Tên món <span class="required">*</span></label>
+          <select id="f-name" class="form-input" onchange="autoFillFromName()">
+            <option value="" data-i18n="form_name_ph">— Chọn món cần nhập —</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_cat">Danh mục <span class="required">*</span></label>
+          <select id="f-cat" class="form-input" onchange="handleCatChange()">
+            <option value="" data-i18n="form_cat_ph">— Chọn nhóm —</option>
+          </select>
+          <input id="f-cat-custom" class="form-input" type="text" data-i18n-placeholder="form_cat_custom"
+            placeholder="Nhập tên nhóm mới..." style="margin-top:6px;display:none;">
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_desc">Mô tả ngắn</label>
+          <input id="f-desc" class="form-input" type="text" data-i18n-placeholder="form_desc_ph"
+            placeholder="VD: Cocktail xoài chua ngọt">
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_ing">Nguyên liệu <span class="required">*</span></label>
+          <div class="ing-form-list" id="f-ing-list"></div>
+          <button class="add-ing-btn" onclick="addFormIngRow()" data-i18n="form_add_ing">+ Thêm nguyên liệu</button>
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_glass">Loại ly / dụng cụ</label>
+          <select id="f-glass" class="form-input" onchange="handleGlassChange()">
+            <option value="" data-i18n="form_glass_ph">— Chọn loại ly —</option>
+            <option>Ly cao (Highball)</option>
+            <option>Ly thấp (Rocks)</option>
+            <option>Ly Wine</option>
+            <option>Ly Wine lớn (250ml)</option>
+            <option>Ly Champagne (Flute)</option>
+            <option>Ly bia / Ly Pilsner</option>
+            <option>Ly Weizen cao</option>
+            <option>Ly Balloon / Ly Highball</option>
+            <option>Ly đồng (Copper Mug)</option>
+            <option>Ly nước</option>
+            <option>Tách cà phê</option>
+            <option>Demitasse (tách nhỏ)</option>
+            <option>Tách Cappuccino 180ml</option>
+            <option>Tách Espresso lớn</option>
+            <option>Ấm trà + tách</option>
+            <option>Chén sake (Ochoko)</option>
+            <option value="__other__" data-i18n="form_glass_other">Khác (nhập tay)...</option>
+          </select>
+          <input id="f-glass-other" class="form-input" type="text" data-i18n-placeholder="form_glass_other_ph"
+            placeholder="Nhập loại ly..." style="margin-top:6px;display:none;">
+        </div>
+
+        <div class="form-row">
+          <label data-i18n="form_note">Ghi chú / cách pha</label>
+          <textarea id="f-note" class="form-input" rows="3" data-i18n-placeholder="form_note_ph"
+            placeholder="VD: Tỉ lệ 1:3, thêm đá, trang trí bạc hà..." style="resize:vertical;"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-save" onclick="saveDrink()" data-i18n="form_save">💾 Lưu công thức</button>
+          <button class="btn btn-delete" id="f-delete-btn" style="display:none;" onclick="deleteEditingDrink()"
+            data-i18n="form_delete">🗑 Xoá</button>
+          <button class="btn btn-cancel" onclick="cancelEdit()" data-i18n="form_cancel">✕ Huỷ</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ TRAIN MODE ══ -->
+    <div id="train-mode">
+
+      <!-- Settings -->
+      <div class="train-settings" id="train-settings">
+        <div class="train-settings-title" data-i18n="train_title">Chọn loại & nhóm luyện tập</div>
+        <div class="type-toggle" id="train-type-toggle" style="margin-bottom:8px;">
+          <button class="type-btn active" data-type="all" onclick="setTrainType('all',this)"
+            data-i18n="type_all">📚 Tất cả</button>
+          <button class="type-btn" data-type="drink" onclick="setTrainType('drink',this)"
+            data-i18n="type_drink">🍹 Đồ uống</button>
+          <button class="type-btn" data-type="food" onclick="setTrainType('food',this)"
+            data-i18n="type_food">🍽️ Đồ ăn</button>
+          <button class="type-btn" data-type="sushi" onclick="setTrainType('sushi',this)">🍣 Sushi</button>
+          <button class="type-btn" data-type="hotkitchen" onclick="setTrainType('hotkitchen',this)">🔥 Hot
+            Kitchen</button>
+          <button class="type-btn" data-type="service" onclick="setTrainType('service',this)">🍽️ Service</button>
+          <button class="type-btn" data-type="wirtschaft" onclick="setTrainType('wirtschaft',this)">💰 Kinh tế</button>
+          <button class="type-btn" data-type="operations" onclick="setTrainType('operations',this)">🔧
+            Operations</button>
+          <button class="type-btn" data-type="fachkompetenz" onclick="setTrainType('fachkompetenz',this)">🍸
+            Fachkompetenz</button>
+          <button class="type-btn" data-type="compliance" onclick="setTrainType('compliance',this)">⚖️
+            Compliance</button>
+          <button class="type-btn" data-type="sales" onclick="setTrainType('sales',this)">📢 Sales</button>
+          <button class="type-btn" data-type="softskills" onclick="setTrainType('softskills',this)">🌐 Soft
+            Skills</button>
+        </div>
+        <div id="cat-checks" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        <div class="bottom-row">
+          <label class="weak-toggle" id="weak-toggle">
+            <input type="checkbox" id="weak-only">
+            <span data-i18n="train_weak_only">⚡ Chỉ luyện món chưa thuộc</span>
+          </label>
+          <span id="weak-count" style="font-size:0.8rem;color:var(--text-muted);"></span>
+          <button class="btn-start" onclick="startTraining()" data-i18n="train_start">▶ Bắt đầu luyện tập</button>
+        </div>
+      </div>
+
+      <!-- Stats + Progress -->
+      <div id="train-game" style="display:none;">
+        <div class="train-header">
+          <div class="train-stats">
+            <div class="stat-box">
+              <div class="label" data-i18n="stat_current">Câu</div>
+              <div class="value" id="stat-current">1</div>
+            </div>
+            <div class="stat-box">
+              <div class="label" data-i18n="stat_total">Tổng</div>
+              <div class="value" id="stat-total">—</div>
+            </div>
+            <div class="stat-box correct">
+              <div class="label" data-i18n="stat_correct">Đúng</div>
+              <div class="value" id="stat-correct">0</div>
+            </div>
+            <div class="stat-box" style="border-left-color:var(--red);">
+              <div class="label" data-i18n="stat_wrong">Sai</div>
+              <div class="value" id="stat-wrong" style="color:var(--red);">0</div>
+            </div>
+          </div>
+          <button class="btn btn-reset" onclick="resetTraining()" data-i18n="train_end">✕ Kết thúc</button>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-wrap">
+          <div class="timer-bar-bg">
+            <div id="timer-bar" class="timer-bar" style="width:100%"></div>
+          </div>
+          <span id="timer-display" class="timer-label">30s</span>
+        </div>
+
+        <!-- Flashcard -->
+        <div class="flashcard-container">
+          <div class="flashcard fade-in" id="flashcard">
+            <div class="drink-number" id="fc-number">1 / 10</div>
+            <div class="drink-category-label" id="fc-category">—</div>
+            <div class="drink-name" id="fc-name">—</div>
+            <div class="drink-desc" id="fc-desc">—</div>
+          </div>
+        </div>
+
+        <!-- Chip Selection Area -->
+        <div class="input-area fade-in">
+          <p class="chip-instruction"><span data-i18n="chip_instruction">Chọn</span> <strong id="chip-count">?</strong>
+            <span data-i18n="chip_instruction2">nguyên liệu đúng cho món này</span></p>
+          <div class="chip-pool" id="chip-pool"></div>
+
+          <div class="action-buttons">
+            <button class="btn btn-check" onclick="checkAnswer()" data-i18n="btn_check">✓ Kiểm tra</button>
+            <button class="btn btn-reveal" onclick="revealAnswer()" data-i18n="btn_reveal">👁 Xem đáp án</button>
+            <button class="btn btn-next" onclick="nextDrink()" data-i18n="btn_next">Tiếp theo →</button>
+          </div>
+
+          <div class="result-panel" id="result-panel"></div>
+        </div>
+
+      </div>
+
+      <!-- Done screen -->
+      <div class="done-screen" id="done-screen">
+        <div class="done-emoji">🎉</div>
+        <h2 data-i18n="done_heading">Hoàn thành!</h2>
+        <div class="final-score" id="final-score">0 / 0</div>
+        <div class="score-level-wrap" id="score-stars"></div>
+        <div id="score-level-badge"></div>
+        <p id="final-msg" data-i18n="done_msg">Hãy luyện tập thêm nhé!</p>
+        <div class="wrong-breakdown" id="wrong-breakdown"></div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-reveal" id="retry-wrong-btn" style="display:none;" onclick="retryWrongDrinks()"
+            data-i18n="done_retry">🔁 Ôn lại lỗi sai</button>
+          <button class="btn btn-check btn-restart" onclick="resetTraining()" data-i18n="done_restart">🔄 Luyện
+            tiếp</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ HISTORY MODE ══ -->
+    <div id="history-mode">
+      <div class="section-title" data-i18n="history_title">📊 Lịch sử luyện tập</div>
+      <div id="history-content"></div>
+    </div>
+
+    <!-- ══ ASSESS MODE ══ -->
+    <div id="assess-mode" style="display:none;">
+      <div id="assess-root"></div>
+    </div>
+
+  </main>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>
