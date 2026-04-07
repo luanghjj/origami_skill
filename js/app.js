@@ -2541,7 +2541,7 @@
         +ub+db
         +(isAdmin()?'<button class="card-edit-btn" onclick="event.stopPropagation();openEditCard(&quot;'+dq+'&quot;)">\u270f\ufe0f S\u1eeda</button>':'');
       var bHTML = ht?'<div class="card-with-img"><div class="card-content">'+back+'</div>'+bt+'</div>':back;
-      return '<div class="flip-container fade-in" onclick="this.classList.toggle(\'flipped\')">'
+      return '<div class="flip-container fade-in" onclick="this.classList.toggle(&#39;flipped&#39;)">'
         +'<div class="flip-inner">'
         +'<div class="flip-front drink-card" style="position:relative"><span class="flip-hint">\ud83c\udde9\ud83c\uddea Deutsch \u2014 tippen zum Umdrehen</span>'+fHTML+'</div>'
         +'<div class="flip-back drink-card"><span class="flip-hint">\ud83c\uddfb\ud83c\uddf3 Ti\u1ebfng Vi\u1ec7t \u2014 nh\u1ea5n \u0111\u1ec3 l\u1eadt l\u1ea1i</span>'+bHTML+'</div>'
