@@ -1,10 +1,9 @@
-// Self-destruct: unregister this SW and clear all caches
+// Cleanup-only SW: just clear caches and unregister, no reload
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
-      .then(() => self.clients.matchAll())
-      .then(clients => clients.forEach(c => c.navigate(c.url)))
+    caches.keys()
+      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
       .then(() => self.registration.unregister())
   );
 });

@@ -17,16 +17,14 @@
     rel="stylesheet">
   <title>Origami — Luyện Tập Công Thức Đồ Uống</title>
   <script>
-    // Force clear old Service Worker cache on first load
-    if ('serviceWorker' in navigator && !sessionStorage.getItem('sw_cleared')) {
-      sessionStorage.setItem('sw_cleared', '1');
+    // Quietly clean up old Service Workers (no reload)
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(regs) {
         regs.forEach(function(r) { r.unregister(); });
       });
       caches.keys().then(function(keys) {
         keys.forEach(function(k) { caches.delete(k); });
       });
-      setTimeout(function() { location.reload(true); }, 500);
     }
   </script>
   <script>
